@@ -1,0 +1,7 @@
+Cargo.lock
+dump.rdb
+.*.swp
+src/.*.swp
+src/storage/.*.swp
+target/
+target/*

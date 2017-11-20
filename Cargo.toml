@@ -1,0 +1,19 @@
+[package]
+name = "persistentcache"
+version = "0.1.0"
+authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
+license = "MIT or Apache-2.0"
+
+[dependencies]
+clippy = {version = "*", optional = true}
+redis = "0.8.0"
+bincode = "*"
+regex = "*"
+lazy_static = "*"
+fs2 = "*"
+
+[dev-dependencies]
+num = "*"
+
+[features]
+default = []
