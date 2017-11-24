@@ -1,19 +1,27 @@
 [package]
 name = "persistentcache"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
-license = "MIT or Apache-2.0"
+license = "MIT/Apache-2.0"
+description = "Macros for persistently caching function calls using files or Redis"
+documentation = "https://stefan-k.github.io/rust/persistentcache/"
+homepage = "https://github.com/stefan-k/persistentcache-rs"
+repository = "https://github.com/stefan-k/persistentcache-rs"
+readme = "README.md"
+keywords = ["persistent", "caching", "science", "HPC", "memoization"]
+categories = ["caching", "science"]
+license-file = "LICENSE-APACHE"
 
 [dependencies]
-clippy = {version = "*", optional = true}
+clippy = {version = "0.0.174", optional = true}
 redis = "0.8.0"
-bincode = "*"
-regex = "*"
-lazy_static = "*"
-fs2 = "*"
+bincode = "0.9.2"
+regex = "0.2.2"
+lazy_static = "0.2.11"
+fs2 = "0.4.2"
 
 [dev-dependencies]
-num = "*"
+num = "0.1.40"
 
 [features]
 default = []
