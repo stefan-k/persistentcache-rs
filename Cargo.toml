@@ -13,12 +13,13 @@ categories = ["caching", "science"]
 license-file = "LICENSE-APACHE"
 
 [dependencies]
-clippy = {version = "0.0.174", optional = true}
+clippy = {version = "0.0.175", optional = true}
 redis = "0.8.0"
 bincode = "0.9.2"
 regex = "0.2.2"
 lazy_static = "0.2.11"
 fs2 = "0.4.2"
+error-chain = "*"
 
 [dev-dependencies]
 num = "0.1.40"

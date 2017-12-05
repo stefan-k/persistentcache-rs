@@ -1,6 +1,7 @@
 //! Implementation of the macros `cache!` and `cache_func!`.
 use PREFIX;
 use PersistentCache;
+use errors::*;
 
 /// Cache an entire function.
 #[macro_export]

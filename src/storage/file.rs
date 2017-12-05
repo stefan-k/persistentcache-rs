@@ -1,17 +1,16 @@
 //! Storage for persistently saving return values of functions on disk.
-extern crate regex;
-extern crate fs2;
-
 use std::error::Error;
 use std::fs::{File, create_dir_all, remove_file, read_dir};
 use std::io::prelude::*;
 use std::path::Path;
-use self::regex::Regex;
-use self::fs2::FileExt;
+use regex::Regex;
+use fs2::FileExt;
+use errors::*;
 
 #[allow(unused_imports)]
 use PREFIX;
 use PersistentCache;
+
 
 /// `FileStorage` struct
 // pub struct FileStorage<'a> {
@@ -31,7 +30,7 @@ impl FileStorage {
     /// let s = FileStorage::new(".example_dir").unwrap();
     /// ```
     // pub fn new(path: &'a str) -> Result<Self, Box<Error>> {
-    pub fn new(path: &str) -> Result<Self, Box<Error>> {
+    pub fn new(path: &str) -> Result<Self> {
         create_dir_all(path)?;
         Ok(FileStorage { path: path.to_owned() })
     }
@@ -40,7 +39,7 @@ impl FileStorage {
 // impl<'a> PersistentCache for FileStorage<'a> {
 impl PersistentCache for FileStorage {
     /// Returns the value corresponding to the variable `name`.
-    fn get(&self, name: &str) -> Result<Vec<u8>, Box<Error>> {
+    fn get(&self, name: &str) -> Result<Vec<u8>> {
         let fpath = format!("{}/{}", self.path, name);
         let p = Path::new(&fpath);
         let mut file = match File::open(&p) {
@@ -62,7 +61,7 @@ impl PersistentCache for FileStorage {
     }
 
     /// Writes the data of type `&[u8]` in array `val` to the file corresponding to the variable `name`.
-    fn set(&self, name: &str, val: &[u8]) -> Result<(), Box<Error>> {
+    fn set(&self, name: &str, val: &[u8]) -> Result<()> {
         let fpath = format!("{}/{}", self.path, name);
         let p = Path::new(&fpath);
         let mut file = match File::create(&p) {
@@ -77,7 +76,7 @@ impl PersistentCache for FileStorage {
     }
 
     /// Delete all variables stored in `path` (see `new()`) which start with `PREFIX_`.
-    fn flush(&self) -> Result<(), Box<Error>> {
+    fn flush(&self) -> Result<()> {
         let p = Path::new(&self.path);
         match read_dir(p) {
             Err(e) => return Err(e.into()),

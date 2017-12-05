@@ -5,3 +5,5 @@ src/.*.swp
 src/storage/.*.swp
 target/
 target/*
+test/
+file_test/

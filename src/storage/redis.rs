@@ -1,12 +1,12 @@
 //! Storage for persistently saving return values of functions in Redis.
-extern crate redis;
-
 use std::error::Error;
-use self::redis::Commands;
+use redis::{self, Commands};
+use errors::*;
 
 #[allow(unused_imports)]
 use PREFIX;
 use PersistentCache;
+
 
 /// `RedisStorage` struct holds a `redis::Connection` variable.
 pub struct RedisStorage {
@@ -26,7 +26,7 @@ impl RedisStorage {
     ///
     /// let s = RedisStorage::new("redis://127.0.0.1").unwrap();
     /// ```
-    pub fn new(host: &str) -> Result<Self, Box<Error>> {
+    pub fn new(host: &str) -> Result<Self> {
         let client = redis::Client::open(host)?;
         let con = client.get_connection()?;
         Ok(RedisStorage { con: con })
@@ -35,7 +35,7 @@ impl RedisStorage {
 
 impl PersistentCache for RedisStorage {
     /// Returns the value within the Redis variable `name`.
-    fn get(&self, name: &str) -> Result<Vec<u8>, Box<Error>> {
+    fn get(&self, name: &str) -> Result<Vec<u8>> {
         match self.con.get(name) {
             Ok(res) => Ok(res),
             Err(e) => Err(e.into()),
@@ -43,15 +43,15 @@ impl PersistentCache for RedisStorage {
     }
 
     /// Sets the Redis variable `name` to the array `val` of type `&[u8]`.
-    fn set(&self, name: &str, val: &[u8]) -> Result<(), Box<Error>> {
+    fn set(&self, name: &str, val: &[u8]) -> Result<()> {
         // Yes, this is weird.
-        let r: Result<(), self::redis::RedisError> = self.con.set(name, val);
+        let r: Result<()> = self.con.set(name, val).map_err(|e| e.into());
         r?;
         Ok(())
     }
 
     /// Delete all variables stored in the Redis database which start with `PREFIX_`.
-    fn flush(&self) -> Result<(), Box<Error>> {
+    fn flush(&self) -> Result<()> {
         let iter: redis::Iter<String> = redis::cmd("KEYS").arg(format!("{}_*", PREFIX)).iter(
             &self.con,
         )?;
@@ -64,7 +64,7 @@ impl PersistentCache for RedisStorage {
             cmd.arg(bla);
         }
         if flushed_vars > 0 {
-            let r: Result<(), self::redis::RedisError> = cmd.query(&self.con);
+            let r: Result<()> = cmd.query(&self.con).map_err(|e| e.into());
             // This is weird.
             r?;
         }

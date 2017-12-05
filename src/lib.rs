@@ -149,6 +149,7 @@
 //! has better developers. Unfortunately it lacks the 'persistent' part and the caches cannot be
 //! shared between processes/threads, but it should be fairly easy to extend it.
 //!
+#![recursion_limit = "1024"]
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 // #![feature(trace_macros)]
@@ -156,8 +157,26 @@
 #![allow(unused_imports)]
 #![warn(missing_docs)]
 #[macro_use]
+extern crate error_chain;
+#[macro_use]
 extern crate lazy_static;
 extern crate bincode;
+extern crate redis;
+extern crate regex;
+extern crate fs2;
+
+mod errors {
+    error_chain!{
+        foreign_links {
+            Redis(::redis::RedisError);
+            Regex(::regex::Error);
+            IO(::std::io::Error);
+            Bincode(::bincode::Error);
+        }
+    }
+}
+
+use errors::*;
 
 #[macro_use]
 pub mod persistentcache;
@@ -171,11 +190,11 @@ pub const PREFIX: &str = "pc";
 /// Traits which need to be implemented by any storage
 pub trait PersistentCache {
     /// Return serialized value of variable
-    fn get(&self, &str) -> Result<Vec<u8>, Box<std::error::Error>>;
+    fn get(&self, &str) -> Result<Vec<u8>>;
     /// Set serialized value of variable
-    fn set(&self, &str, &[u8]) -> Result<(), Box<std::error::Error>>;
+    fn set(&self, &str, &[u8]) -> Result<()>;
     /// Flush storage
-    fn flush(&self) -> Result<(), Box<std::error::Error>>;
+    fn flush(&self) -> Result<()>;
 }
 
 #[cfg(test)]
@@ -187,23 +206,23 @@ mod tests {
     use storage::redis::RedisStorage;
     use storage::file::FileStorage;
 
-    fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> Result<T, Box<Error>> {
+    fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> Result<T> {
         *counter += 1;
         let ten: T = NumCast::from(10_i64).unwrap();
         Ok(a * ten)
     }
 
-    fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> Result<T, Box<Error>> {
+    fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> Result<T> {
         *counter += 1;
         Ok(a * b)
     }
 
-    fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>, Box<Error>> {
+    fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>> {
         *counter += 1;
         Ok(vec![a[1], a[0]])
     }
 
-    fn throw_error() -> Result<(), Box<Error>> {
+    fn throw_error() -> Result<()> {
         Err(
             ::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into(),
         )
