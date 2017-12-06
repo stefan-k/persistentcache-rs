@@ -152,6 +152,7 @@
 #![recursion_limit = "1024"]
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
+#![cfg_attr(feature="clippy", allow(redundant_closure_call))]
 // #![feature(trace_macros)]
 // #![feature(log_syntax)]
 #![allow(unused_imports)]

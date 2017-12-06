@@ -68,7 +68,6 @@ macro_rules! cache {
     };
     // prefix provided
     ($storage:ident, $func:ident($($x:expr),*), $prefix:expr) => {
-        #[allow(redundant_closure_call)]
         (||{
             use bincode;
             use ::std::hash::{Hash, Hasher};
