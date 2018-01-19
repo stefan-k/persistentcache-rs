@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/stefan-k/persistentcache-rs.svg?branch=master)](https://travis-ci.org/stefan-k/persistentcache-rs)
+
 # persistentcache-rs
 
 persistentcache-rs implements to macros `cache!` and `cache_func!` to cache function calls or entire functions.
