@@ -150,21 +150,21 @@
 //! shared between processes/threads, but it should be fairly easy to extend it.
 //!
 #![recursion_limit = "1024"]
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-#![cfg_attr(feature="clippy", allow(redundant_closure_call))]
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
+#![cfg_attr(feature = "clippy", allow(redundant_closure_call))]
 // #![feature(trace_macros)]
 // #![feature(log_syntax)]
 #![allow(unused_imports)]
 #![warn(missing_docs)]
+extern crate bincode;
 #[macro_use]
 extern crate error_chain;
+extern crate fs2;
 #[macro_use]
 extern crate lazy_static;
-extern crate bincode;
 extern crate redis;
 extern crate regex;
-extern crate fs2;
 
 mod errors {
     error_chain!{
@@ -224,9 +224,7 @@ mod tests {
     }
 
     fn throw_error() -> Result<()> {
-        Err(
-            ::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into(),
-        )
+        Err(::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into())
     }
 
     #[test]

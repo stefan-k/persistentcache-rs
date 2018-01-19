@@ -1,6 +1,6 @@
 //! Storage for persistently saving return values of functions on disk.
 use std::error::Error;
-use std::fs::{File, create_dir_all, remove_file, read_dir};
+use std::fs::{create_dir_all, read_dir, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
 use regex::Regex;
@@ -10,7 +10,6 @@ use errors::*;
 #[allow(unused_imports)]
 use PREFIX;
 use PersistentCache;
-
 
 /// `FileStorage` struct
 // pub struct FileStorage<'a> {
@@ -32,7 +31,9 @@ impl FileStorage {
     // pub fn new(path: &'a str) -> Result<Self, Box<Error>> {
     pub fn new(path: &str) -> Result<Self> {
         create_dir_all(path)?;
-        Ok(FileStorage { path: path.to_owned() })
+        Ok(FileStorage {
+            path: path.to_owned(),
+        })
     }
 }
 

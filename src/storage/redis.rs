@@ -7,7 +7,6 @@ use errors::*;
 use PREFIX;
 use PersistentCache;
 
-
 /// `RedisStorage` struct holds a `redis::Connection` variable.
 pub struct RedisStorage {
     con: redis::Connection,
@@ -52,9 +51,9 @@ impl PersistentCache for RedisStorage {
 
     /// Delete all variables stored in the Redis database which start with `PREFIX_`.
     fn flush(&self) -> Result<()> {
-        let iter: redis::Iter<String> = redis::cmd("KEYS").arg(format!("{}_*", PREFIX)).iter(
-            &self.con,
-        )?;
+        let iter: redis::Iter<String> = redis::cmd("KEYS")
+            .arg(format!("{}_*", PREFIX))
+            .iter(&self.con)?;
         let cmd: &mut redis::Cmd = &mut redis::cmd("DEL");
         // Not a very good looking hack, but I dont know how to figure out whether the iterator is
         // empty or not...
