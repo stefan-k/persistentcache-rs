@@ -6,7 +6,7 @@ persistentcache-rs implements to macros `cache!` and `cache_func!` to cache func
 The implemented storages are persistent and can be shared between processes.
 Storages either store on disk (`FileStorage`) or Redis (`RedisStorage`).
 
-The documentation can be found [here](https://stefan-k.github.io/rust/persistentcache)
+The documentation can be found [here](https://stefan-k.github.io/persistentcache-rs/persistentcache)
 
 ## History
 
