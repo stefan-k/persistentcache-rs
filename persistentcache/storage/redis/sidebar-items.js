@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RedisStorage","`RedisStorage` struct holds a `redis::Connection` variable."]]});
