@@ -1,3 +1,10 @@
+// Copyright 2018 Stefan Kroboth
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
+// http://opensource.org/licenses/MIT>, at your option. This file may not be
+// copied, modified, or distributed except according to those terms.
+
 //! Storage for persistently saving return values of functions on disk.
 use std::error::Error;
 use std::fs::{create_dir_all, read_dir, remove_file, File};
@@ -12,13 +19,12 @@ use PREFIX;
 use PersistentCache;
 
 /// `FileStorage` struct
-// pub struct FileStorage<'a> {
 pub struct FileStorage {
+    /// Indicates where files are saved
     path: String,
 }
 
 impl FileStorage {
-    // impl<'a> FileStorage<'a> {
     /// Creates the `path` directory and returns a `FileStorage` struct.
     ///
     /// # Examples
@@ -37,7 +43,6 @@ impl FileStorage {
     }
 }
 
-// impl<'a> PersistentCache for FileStorage<'a> {
 impl PersistentCache for FileStorage {
     /// Returns the value corresponding to the variable `name`.
     fn get(&self, name: &str) -> Result<Vec<u8>> {
