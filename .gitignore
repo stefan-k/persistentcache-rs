@@ -1,9 +1,10 @@
 Cargo.lock
+**/Cargo.lock
 dump.rdb
-.*.swp
-src/.*.swp
-src/storage/.*.swp
+*.swp
+**/*.swp
 target/
 target/*
+**/target
 test/
 file_test/

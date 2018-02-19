@@ -26,3 +26,6 @@ num = "0.1.41"
 
 [features]
 default = []
+
+[workspace]
+members = ["persistentcache_procmacro"]
