@@ -1,7 +1,123 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+// Copyright 2018 Stefan Kroboth
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://apache.org/licenses/LICENSE-2.0> or the MIT license <LICENSE-MIT or
+// http://opensource.org/licenses/MIT>, at your option. This file may not be
+// copied, modified, or distributed except according to those terms.
+
+#![feature(proc_macro)]
+#![recursion_limit = "256"]
+
+#[macro_use]
+extern crate futures_await_quote as quote;
+extern crate futures_await_syn as syn;
+#[macro_use]
+extern crate lazy_static;
+extern crate proc_macro;
+
+use proc_macro::TokenStream;
+use syn::*;
+
+#[derive(Debug)]
+struct Function {
+    attrs: Vec<syn::Attribute>,
+    ident: Ident,
+    vis: Visibility,
+    block: Box<Block>,
+    unsafety: Unsafety,
+    inputs: delimited::Delimited<FnArg, tokens::Comma>,
+    output: FunctionRetTy,
+    fn_token: tokens::Fn_,
+}
+
+impl Function {
+    fn parse(func: TokenStream) -> Self {
+        let Item { node, attrs } = syn::parse(func.clone()).unwrap();
+        let ItemFn {
+            ident,
+            vis,
+            block,
+            decl,
+            unsafety,
+            ..
+        } = match node {
+            ItemKind::Fn(item) => item,
+            _ => unreachable!(),
+        };
+        let FnDecl {
+            inputs,
+            output,
+            fn_token,
+            ..
+        } = { *decl };
+        Function {
+            attrs,
+            ident,
+            vis,
+            block,
+            unsafety,
+            inputs,
+            output,
+            fn_token,
+        }
     }
+}
+
+#[proc_macro_attribute]
+pub fn persistent_cache(_attr: TokenStream, func: TokenStream) -> TokenStream {
+    let func = Function::parse(func);
+    let stuff = function_persistenticator(&func);
+    stuff
+}
+
+fn function_persistenticator(func: &Function) -> TokenStream {
+    let vis = &func.vis;
+    let fn_token = &func.fn_token;
+    let ident = &func.ident;
+    let inputs = &func.inputs;
+    let output = &func.output;
+    let block = &func.block;
+    // let parsed_inputs = func.input_values();
+
+    let pers_func = quote!{
+        extern crate bincode;
+        use std::hash::{Hasher};
+        #vis #fn_token #ident(#inputs) #output
+        {
+        // (||{
+            lazy_static!{
+                static ref S: ::std::sync::Mutex<::storage::file::FileStorage> = ::std::sync::Mutex::new(::storage::file::FileStorage::new("file_test").unwrap());
+            };
+            let mut s = ::std::collections::hash_map::DefaultHasher::new();
+
+            macro_rules! expand_inputs {
+                ($s:ident; $var:ident : $type:ty) => {
+                    $var.hash(&mut $s);
+                };
+                ($s:ident; $var:ident : $type:ty, ($x:ident : $y:ty,)*) => {
+                    expand_inputs!($s; $var : $type:ty);
+                    expand_inputs!($s; $($x : $y),*);
+                };
+            }
+
+            expand_inputs!(s; #inputs);
+            // for item in #parsed_inputs.iter() {
+            //     item.hash(&mut s);
+            // }
+            let var_name = format!("{}_{}_{}_{:?}", PREFIX, "fu", stringify!(#ident), s.finish());
+            let result: Vec<u8> = S.lock().unwrap().get(&var_name).unwrap();
+            match result.len() {
+                0 => {
+                    println!("calling");
+                    // let res = (||{#block})();
+                    let res = #block;
+                    S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
+                    return res;
+                },
+                _ => {println!("retrieving"); return bincode::deserialize(&result).unwrap()},
+            };
+        // })()
+        }
+    };
+    pers_func.into()
 }

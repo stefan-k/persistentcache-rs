@@ -3,9 +3,16 @@ name = "persistentcache_procmacro"
 version = "0.1.0"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
 
-[dependencies]
-syn = "0.12"
-quote = "0.4"
-
 [lib]
 proc-macro = true
+
+[dependencies]
+synom = "0.11.3"
+futures-await-quote = "0.4"
+proc-macro2 = { version = "0.1", features = ["unstable"] }
+lazy_static = "1.0.0"
+
+[dependencies.futures-await-syn]
+version = "0.12"
+features = ["full", "fold", "parsing", "printing", "extra-traits"]
+default-features = false

@@ -15,11 +15,15 @@ license-file = "LICENSE-APACHE"
 [dependencies]
 clippy = {version = "0.0.175", optional = true}
 redis = "0.8.0"
-bincode = "0.9.2"
+bincode = "1.0.0"
 regex = "0.2.3"
 lazy_static = "1.0.0"
 fs2 = "0.4.2"
 error-chain = "0.11.0"
+
+[dependencies.persistentcache_procmacro]
+path = "persistentcache_procmacro"
+version = "*"
 
 [dev-dependencies]
 num = "0.1.41"

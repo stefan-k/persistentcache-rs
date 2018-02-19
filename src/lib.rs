@@ -164,14 +164,19 @@
 // #![feature(log_syntax)]
 #![allow(unused_imports)]
 #![warn(missing_docs)]
+// #![feature(custom_attribute)]
+#![feature(proc_macro)]
 extern crate bincode;
 #[macro_use]
 extern crate error_chain;
 extern crate fs2;
 #[macro_use]
 extern crate lazy_static;
+extern crate persistentcache_procmacro;
 extern crate redis;
 extern crate regex;
+
+use persistentcache_procmacro::persistent_cache;
 
 mod errors {
     error_chain!{
@@ -209,132 +214,176 @@ pub trait PersistentCache {
 mod tests {
     extern crate num;
     use super::*;
+    use std;
     use std::error::Error;
     use self::num::{Num, NumCast};
     use storage::redis::RedisStorage;
     use storage::file::FileStorage;
+    // use persistentcache_procmacro::peristent_cache;
 
-    fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> Result<T> {
-        *counter += 1;
-        let ten: T = NumCast::from(10_i64).unwrap();
-        Ok(a * ten)
-    }
-
-    fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> Result<T> {
-        *counter += 1;
-        Ok(a * b)
-    }
-
-    fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>> {
-        *counter += 1;
-        Ok(vec![a[1], a[0]])
-    }
-
-    fn throw_error() -> Result<()> {
-        Err(::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into())
-    }
+    // fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> Result<T> {
+    //     *counter += 1;
+    //     let ten: T = NumCast::from(10_i64).unwrap();
+    //     Ok(a * ten)
+    // }
+    //
+    // fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> Result<T> {
+    //     *counter += 1;
+    //     Ok(a * b)
+    // }
+    //
+    // fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>> {
+    //     *counter += 1;
+    //     Ok(vec![a[1], a[0]])
+    // }
+    //
+    // fn throw_error() -> Result<()> {
+    //     Err(::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into())
+    // }
+    //
+    // #[test]
+    // fn test_fib() {
+    //     let s = RedisStorage::new("redis://127.0.0.1").unwrap();
+    //     s.flush().unwrap();
+    //     cache_func!(Redis, "redis://127.0.0.1",
+    //         fn fib(n: u64) -> u64 {
+    //             if n == 0 || n ==1 {
+    //                 return n
+    //             }
+    //             fib(n-1) + fib(n-2)
+    //         });
+    //     assert_eq!(fib(10), 55);
+    //     s.flush().unwrap();
+    // }
+    //
+    // #[test]
+    // fn test_func() {
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     cache_func!(File, "test",
+    //         fn add_two(n: u64) -> u64 {
+    //             n + 2
+    //         });
+    //     assert_eq!(12, add_two(10));
+    //     s.flush().unwrap();
+    // }
 
     #[test]
-    fn test_fib() {
-        let s = RedisStorage::new("redis://127.0.0.1").unwrap();
-        s.flush().unwrap();
-        cache_func!(Redis, "redis://127.0.0.1", 
-            fn fib(n: u64) -> u64 {
-                if n == 0 || n ==1 {
-                    return n
-                }
-                fib(n-1) + fib(n-2)
-            });
-        assert_eq!(fib(10), 55);
-        s.flush().unwrap();
-    }
-
-    #[test]
-    fn test_func() {
+    fn test_func_procmacro() {
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        cache_func!(File, "test", 
-            fn add_two(n: u64) -> u64 {
-                n + 2
-            });
+
+        #[persistent_cache]
+        fn add_two(n: u64) -> u64 {
+            n + 2
+        }
+
         assert_eq!(12, add_two(10));
         s.flush().unwrap();
     }
 
-    #[test]
-    fn test_redis_storage() {
-        let a: i64 = 6;
-        let mut counter: i64 = 0;
-        let s = RedisStorage::new("redis://127.0.0.1").unwrap();
-        s.flush().unwrap();
-        assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
-        assert_eq!(counter, 1);
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
-        assert_eq!(counter, 2);
-        let mut counter: i64 = 1;
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
-        assert_eq!(counter, 1);
-        s.flush().unwrap();
-    }
+    // #[test]
+    // fn test_func_procmacro2() {
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     let mut counter: i64 = 0;
+    //
+    //     // fn test_func_proc<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>> {
+    //     #[persistent_cache]
+    //     fn test_func_proc(a: &Vec<i64>, counter: &mut i64) -> Vec<i64> {
+    //         *counter += 1;
+    //         // Ok(vec![a[1], a[0]])
+    //         vec![a[1], a[0]]
+    //     }
+    //
+    //     assert_eq!(
+    //         vec![1, 2],
+    //         // test_func_proc(&vec![2, 1], &mut counter).unwrap()
+    //         test_func_proc(&vec![2, 1], &mut counter)
+    //     );
+    //     assert_eq!(
+    //         vec![1, 2],
+    //         // test_func_proc(&vec![2, 1], &mut counter).unwrap()
+    //         test_func_proc(&vec![2, 1], &mut counter)
+    //     );
+    //     assert_eq!(counter, 1);
+    //     s.flush().unwrap();
+    // }
 
-    #[test]
-    fn test_file_storage() {
-        let a: i64 = 6;
-        let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
-        s.flush().unwrap();
-        assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
-        assert_eq!(counter, 1);
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
-        assert_eq!(counter, 2);
-        let mut counter: i64 = 1;
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
-        assert_eq!(counter, 1);
-        s.flush().unwrap();
-    }
-
-    #[test]
-    fn test_hashing() {
-        // swapping the indices should change the hashes!
-        let a: i64 = 6;
-        let b: i64 = 2;
-        let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
-        s.flush().unwrap();
-        assert_eq!(a * b, cache!(s, test_func_2(a, b, &mut counter)).unwrap());
-        assert_eq!(counter, 1);
-        let mut counter: i64 = 0;
-        assert_eq!(a * b, cache!(s, test_func_2(b, a, &mut counter)).unwrap());
-        assert_eq!(counter, 1);
-    }
-
-    #[test]
-    fn test_vectors() {
-        let a: Vec<i64> = vec![1, 2, 3];
-        let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
-        s.flush().unwrap();
-        assert_eq!(vec![2, 1], test_func_3(&a, &mut counter).unwrap());
-        assert_eq!(counter, 1);
-        assert_eq!(
-            vec![2, 1],
-            cache!(s, test_func_3(&a, &mut counter)).unwrap()
-        );
-        assert_eq!(counter, 2);
-        let mut counter: i64 = 1;
-        assert_eq!(
-            vec![2, 1],
-            cache!(s, test_func_3(&a, &mut counter)).unwrap()
-        );
-        assert_eq!(counter, 1);
-        s.flush().unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn failing_function() {
-        let s = FileStorage::new("file_test").unwrap();
-        s.flush().unwrap();
-        cache!(s, throw_error()).unwrap();
-    }
+    // #[test]
+    // fn test_redis_storage() {
+    //     let a: i64 = 6;
+    //     let mut counter: i64 = 0;
+    //     let s = RedisStorage::new("redis://127.0.0.1").unwrap();
+    //     s.flush().unwrap();
+    //     assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
+    //     assert_eq!(counter, 1);
+    //     assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+    //     assert_eq!(counter, 2);
+    //     let mut counter: i64 = 1;
+    //     assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+    //     assert_eq!(counter, 1);
+    //     s.flush().unwrap();
+    // }
+    //
+    // #[test]
+    // fn test_file_storage() {
+    //     let a: i64 = 6;
+    //     let mut counter: i64 = 0;
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
+    //     assert_eq!(counter, 1);
+    //     assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+    //     assert_eq!(counter, 2);
+    //     let mut counter: i64 = 1;
+    //     assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+    //     assert_eq!(counter, 1);
+    //     s.flush().unwrap();
+    // }
+    //
+    // #[test]
+    // fn test_hashing() {
+    //     // swapping the indices should change the hashes!
+    //     let a: i64 = 6;
+    //     let b: i64 = 2;
+    //     let mut counter: i64 = 0;
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     assert_eq!(a * b, cache!(s, test_func_2(a, b, &mut counter)).unwrap());
+    //     assert_eq!(counter, 1);
+    //     let mut counter: i64 = 0;
+    //     assert_eq!(a * b, cache!(s, test_func_2(b, a, &mut counter)).unwrap());
+    //     assert_eq!(counter, 1);
+    // }
+    //
+    // #[test]
+    // fn test_vectors() {
+    //     let a: Vec<i64> = vec![1, 2, 3];
+    //     let mut counter: i64 = 0;
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     assert_eq!(vec![2, 1], test_func_3(&a, &mut counter).unwrap());
+    //     assert_eq!(counter, 1);
+    //     assert_eq!(
+    //         vec![2, 1],
+    //         cache!(s, test_func_3(&a, &mut counter)).unwrap()
+    //     );
+    //     assert_eq!(counter, 2);
+    //     let mut counter: i64 = 1;
+    //     assert_eq!(
+    //         vec![2, 1],
+    //         cache!(s, test_func_3(&a, &mut counter)).unwrap()
+    //     );
+    //     assert_eq!(counter, 1);
+    //     s.flush().unwrap();
+    // }
+    //
+    // #[test]
+    // #[should_panic]
+    // fn failing_function() {
+    //     let s = FileStorage::new("file_test").unwrap();
+    //     s.flush().unwrap();
+    //     cache!(s, throw_error()).unwrap();
+    // }
 }

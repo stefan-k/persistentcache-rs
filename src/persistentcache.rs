@@ -58,7 +58,7 @@ macro_rules! cache_func {
         match result.len() {
             0 => {
                 let res = {$b};
-                S.lock().unwrap().set(&var_name, &bincode::serialize(&res, bincode::Infinite).unwrap()).unwrap();
+                S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
                 return res;
             },
             _ => return bincode::deserialize(&result).unwrap(),
@@ -90,7 +90,7 @@ macro_rules! cache {
                 0 => {
                     match $func($($x),*) {
                         Ok(res) => {
-                            $storage.set(&var_name, &bincode::serialize(&res, bincode::Infinite)?)?;
+                            $storage.set(&var_name, &bincode::serialize(&res)?)?;
                             Ok(res)
                         }
                         Err(e) => Err(e)
