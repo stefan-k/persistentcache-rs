@@ -11,7 +11,6 @@
 #[macro_use]
 extern crate futures_await_quote as quote;
 extern crate futures_await_syn as syn;
-#[macro_use]
 extern crate lazy_static;
 extern crate proc_macro;
 
@@ -77,14 +76,12 @@ fn function_persistenticator(func: &Function) -> TokenStream {
     let inputs = &func.inputs;
     let output = &func.output;
     let block = &func.block;
-    // let parsed_inputs = func.input_values();
 
     let pers_func = quote!{
         extern crate bincode;
-        use std::hash::{Hasher};
+        use std::hash::{Hash, Hasher};
         #vis #fn_token #ident(#inputs) #output
         {
-        // (||{
             lazy_static!{
                 static ref S: ::std::sync::Mutex<::storage::file::FileStorage> = ::std::sync::Mutex::new(::storage::file::FileStorage::new("file_test").unwrap());
             };
@@ -101,9 +98,7 @@ fn function_persistenticator(func: &Function) -> TokenStream {
             }
 
             expand_inputs!(s; #inputs);
-            // for item in #parsed_inputs.iter() {
-            //     item.hash(&mut s);
-            // }
+
             let var_name = format!("{}_{}_{}_{:?}", PREFIX, "fu", stringify!(#ident), s.finish());
             let result: Vec<u8> = S.lock().unwrap().get(&var_name).unwrap();
             match result.len() {
@@ -114,10 +109,15 @@ fn function_persistenticator(func: &Function) -> TokenStream {
                     S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
                     return res;
                 },
-                _ => {println!("retrieving"); return bincode::deserialize(&result).unwrap()},
+                _ => {
+                    println!("retrieving");
+                    return bincode::deserialize(&result).unwrap()
+                },
             };
-        // })()
         }
     };
-    pers_func.into()
+    // bypass #46489 (Proc macro hygiene regression)
+    let pers_func = pers_func.to_string().parse().unwrap();
+    pers_func
+    // pers_func.into()
 }
