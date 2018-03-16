@@ -88,29 +88,30 @@ fn function_persistenticator(func: &Function) -> TokenStream {
             let mut s = ::std::collections::hash_map::DefaultHasher::new();
 
             macro_rules! expand_inputs {
+                ($s:ident;) => {};
                 ($s:ident; $var:ident : $type:ty) => {
                     $var.hash(&mut $s);
                 };
-                ($s:ident; $var:ident : $type:ty, ($x:ident : $y:ty,)*) => {
-                    expand_inputs!($s; $var : $type:ty);
+                ($s:ident; $var:ident : $type:ty, $($x:ident : $y:ty,)*) => {
+                    expand_inputs!($s; $var : $type);
                     expand_inputs!($s; $($x : $y),*);
                 };
             }
 
-            expand_inputs!(s; #inputs);
+            expand_inputs!(s; #inputs,);
 
             let var_name = format!("{}_{}_{}_{:?}", PREFIX, "fu", stringify!(#ident), s.finish());
             let result: Vec<u8> = S.lock().unwrap().get(&var_name).unwrap();
             match result.len() {
                 0 => {
-                    println!("calling");
+                    // println!("calling");
                     // let res = (||{#block})();
                     let res = #block;
                     S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
                     return res;
                 },
                 _ => {
-                    println!("retrieving");
+                    // println!("retrieving");
                     return bincode::deserialize(&result).unwrap()
                 },
             };
