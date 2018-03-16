@@ -12,3 +12,7 @@
 pub mod redis;
 /// `FileStorage`
 pub mod file;
+
+/// Bring them into scope
+pub use storage::redis::RedisStorage;
+pub use storage::file::FileStorage;
