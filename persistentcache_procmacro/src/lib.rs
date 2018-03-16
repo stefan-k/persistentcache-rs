@@ -5,6 +5,11 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+//! Proc macro to persistently cache functions.
+//!
+//! TODO: Actual documentation
+//!
+//! Many ideas are taken from [accel](https://github.com/termoshtt/accel/)
 #![feature(proc_macro)]
 #![recursion_limit = "256"]
 
@@ -76,6 +81,17 @@ fn function_persistenticator(func: &Function) -> TokenStream {
     let inputs = &func.inputs;
     let output = &func.output;
     let block = &func.block;
+    let attrs = &func.attrs;
+    // TODO: Deal with empty case
+    // Also, make this less horrible...
+    let tts = &attrs[0].tts[0];
+    let attr = &quote!(#tts).to_string();
+    let brackets: &[_] = &['(', ')'];
+    let quotes: &[_] = &['"', '"'];
+    let attr = attr.trim_matches(brackets);
+    let attrs: Vec<&str> = attr.split(',').map(|x| x.trim()).collect();
+    let storage: Ident = attrs[0].into();
+    let path: &str = attrs[1].trim_matches(quotes);
 
     let pers_func = quote!{
         extern crate bincode;
@@ -83,9 +99,11 @@ fn function_persistenticator(func: &Function) -> TokenStream {
         #vis #fn_token #ident(#inputs) #output
         {
             lazy_static!{
-                static ref S: ::std::sync::Mutex<::storage::file::FileStorage> = ::std::sync::Mutex::new(::storage::file::FileStorage::new("file_test").unwrap());
+                static ref S: ::std::sync::Mutex<#storage> = ::std::sync::Mutex::new(#storage::new(#path).unwrap());
             };
             let mut s = ::std::collections::hash_map::DefaultHasher::new();
+
+            // println!("{:?}", #attrs[0]);
 
             macro_rules! expand_inputs {
                 ($s:ident;) => {};
