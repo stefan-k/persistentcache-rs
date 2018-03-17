@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 # Make doc
-cargo doc --no-deps
+cargo clean
+cargo doc --no-deps --all
 
 # Make temporary folder
 rm -rf .doc_tmp
