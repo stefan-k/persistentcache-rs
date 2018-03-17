@@ -219,9 +219,11 @@
 //! This crate is inspired by [owls-cache](https://github.com/havoc-io/owls-cache) and its primary
 //! goal is to teach myself Rust. While working on it, I realised that a similar crate already
 //! exists: [cached-rs](https://github.com/jaemk/cached). I've borrowed a couple of ideas from
-//! there. Have a look at it, it looks much more professional than this crate and almost certainly
-//! has better developers. Unfortunately it lacks the 'persistent' part and the caches cannot be
-//! shared between processes/threads, but it should be fairly easy to extend it.
+//! there.  I suggest you have a look at the cached-rs crate, too.  Unfortunately it lacks the
+//! 'persistent' part and the caches cannot be shared between processes/threads, but it should be
+//! fairly easy to extend it. Furthermore, the excellent
+//! [accel](https://github.com/termoshtt/accell) has been very helpful. I shamelessly copied parts
+//! of it for the `persistentcache_procmacro` crate.
 //!
 #![recursion_limit = "1024"]
 #![cfg_attr(feature = "clippy", feature(plugin))]
@@ -307,13 +309,16 @@ mod tests {
     fn test_fib() {
         let s = RedisStorage::new("redis://127.0.0.1").unwrap();
         s.flush().unwrap();
-        cache_func!(Redis, "redis://127.0.0.1",
+        cache_func!(
+            Redis,
+            "redis://127.0.0.1",
             fn fib(n: u64) -> u64 {
-                if n == 0 || n ==1 {
-                    return n
+                if n == 0 || n == 1 {
+                    return n;
                 }
-                fib(n-1) + fib(n-2)
-            });
+                fib(n - 1) + fib(n - 2)
+            }
+        );
         assert_eq!(fib(10), 55);
         s.flush().unwrap();
     }
@@ -322,10 +327,13 @@ mod tests {
     fn test_func() {
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        cache_func!(File, "test",
+        cache_func!(
+            File,
+            "test",
             fn add_two(n: u64) -> u64 {
                 n + 2
-            });
+            }
+        );
         assert_eq!(12, add_two(10));
         s.flush().unwrap();
     }

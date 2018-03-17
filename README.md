@@ -13,8 +13,9 @@ The documentation can be found [here](https://stefan-k.github.io/persistentcache
 This crate is inspired by [owls-cache](https://github.com/havoc-io/owls-cache) and its primary goal is to teach myself Rust.
 While working on it, I realised that a similar crate already exists: [cached-rs](https://github.com/jaemk/cached).
 I've borrowed a couple of ideas from there.
-Have a look at it, it looks much more professional than this crate and almost certainly has better developers.
+I suggest you have a look at the cached-rs crate, too.
 Unfortunately it lacks the 'persistent' part and the caches cannot be shared between processes/threads, but it should be fairly easy to extend it.
+Furthermore, the excellent [accel](https://github.com/termoshtt/accell) has been very helpful. I shamelessly copied parts of it for the `persistentcache_procmacro` crate.
 
 ## License
 
