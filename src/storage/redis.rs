@@ -35,7 +35,7 @@ impl RedisStorage {
     pub fn new(host: &str) -> Result<Self> {
         let client = redis::Client::open(host)?;
         let con = client.get_connection()?;
-        Ok(RedisStorage { con: con })
+        Ok(RedisStorage { con })
     }
 }
 
