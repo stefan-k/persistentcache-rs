@@ -500,7 +500,6 @@
 <span id="443">443</span>
 <span id="444">444</span>
 <span id="445">445</span>
-<span id="446">446</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Stefan Kroboth</span>
 <span class="comment">//</span>
@@ -551,11 +550,12 @@
 <span class="doccomment">//! ## Example</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
+<span class="doccomment">//! #![feature(proc_macro)]</span>
 <span class="doccomment">//! #[macro_use]</span>
 <span class="doccomment">//! extern crate lazy_static;</span>
 <span class="doccomment">//! #[macro_use]</span>
 <span class="doccomment">//! extern crate persistentcache;</span>
-<span class="doccomment">//! extern crate persistent_procmacro;</span>
+<span class="doccomment">//! extern crate persistentcache_procmacro;</span>
 <span class="doccomment">//! use persistentcache::*;</span>
 <span class="doccomment">//! use persistentcache::storage::{FileStorage, RedisStorage};</span>
 <span class="doccomment">//! use persistentcache_procmacro::persistent_cache;</span>
@@ -578,13 +578,13 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file(2));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file(2));</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -783,10 +783,8 @@
     <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">num</span>;
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">std</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
     <span class="kw">use</span> <span class="self">self</span>::<span class="ident">num</span>::{<span class="ident">Num</span>, <span class="ident">NumCast</span>};
-    <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">redis</span>::<span class="ident">RedisStorage</span>;
-    <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">file</span>::<span class="ident">FileStorage</span>;
+    <span class="kw">use</span> <span class="ident">storage</span>::{<span class="ident">FileStorage</span>, <span class="ident">RedisStorage</span>};
     <span class="kw">use</span> <span class="ident">persistentcache_procmacro</span>::<span class="ident">persistent_cache</span>;
 
     <span class="kw">fn</span> <span class="ident">test_func_1</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span> <span class="op">+</span> <span class="ident">NumCast</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
