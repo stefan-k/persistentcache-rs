@@ -10,7 +10,8 @@
     <title>persistentcache - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../dark.css">
     <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
@@ -59,54 +60,74 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/persistentcache/lib.rs.html#8-380' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/persistentcache/lib.rs.html#8-446' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Macros for persistently caching function calls</p>
-<p>The values are cached either in files or on Redis. Two storages, <code>FileStorage</code> and <code>RedisStorage</code>
-are provided.
+<p>The values are cached either in files or on Redis. Two storages, <code>FileStorage</code> and
+<code>RedisStorage</code> are provided.
 Caching is performed based on the function name and function parameters, meaning that for every
 combination of function and parameters, the returned value is stored in a storage. Subsequent
 calls of this function with the same parameters are not computed, but instead fetched from the
 storage. This can lead to an decrease in computing time in case the function call is
 computationally more expensive than fetching the value from the storage. The storages are
 persistent (stored on disk) and can be shared between different threads and processes.
-All Parameters to the function need to be Hashable. The return value needs to be serializeable
-by the crate <code>bincode</code>.</p>
+All parameters of the function to be cached need to be Hashable. The return value needs to be
+serializeable by the crate <code>bincode</code>.</p>
+<p>There are two different ways of caching:</p>
+<ol>
+<li>Caching individual function calls with the <code>cache!</code> macro. This way the function can still
+be used without caching if necessary.</li>
+<li>Caching every function call. For this, either the <code>cache_func!</code> macro or a procedural macro
+can be used. The latter is achieved with the compiler directive <code>#[persistent_cache]</code> of the
+subcrate <code>persistentcache_procmacro</code>.</li>
+</ol>
 <h1 id="setup" class="section-header"><a href="#setup">Setup</a></h1>
-<p>Add the following dependencies to your projet:</p>
+<p>Add the following dependencies to your project:</p>
 <pre><code class="language-text">[dependencies]
 lazy_static = &quot;*&quot;
-bincode = &quot;*&quot;
 persistentcache = &quot;*&quot;
+persistentcache_procmacro = &quot;*&quot;  # Only needed for `#[peristent_cache]`
 </code></pre>
-<h1 id="caching-function-calls-with-cache" class="section-header"><a href="#caching-function-calls-with-cache">Caching function calls with <code>cache!</code></a></h1>
-<p>The macro <code>cache!</code> caches a function call. The advantage of this approach over the macro
-<code>cache_func</code> is that different storages can be used for different calls. Furthermore the
-function can still be called without caching if desired.
-However, in case of recursive functions, this will most likely not work as expected because the
-recursive calls will not be cached.
-The macro expects the function to return a value of type <code>Result&lt;T, Box&lt;std::error::Error&gt;&gt;</code>.</p>
+<h1 id="caching-a-function-with-persistent_cache" class="section-header"><a href="#caching-a-function-with-persistent_cache">Caching a function with <code>#[persistent_cache]</code></a></h1>
+<p>The easiest way to cache all calls to a function is by preceding it with the
+<code>#[persistent_cache]</code> directive. This modifies the function such that values never computed
+before are computed and cached in a storage. Already computed values are fetched from said
+storage without computing. The return type needs to implement the <code>Serializable</code> trait.</p>
 <h2 id="example" class="section-header"><a href="#example">Example</a></h2>
 <pre class="rust rust-example-rendered">
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">redundant_closure_call</span>)]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">bincode</span>;
-<span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">persistentcache</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lazy_static</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">persistentcache</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">persistent_procmacro</span>;
 <span class="kw">use</span> <span class="ident">persistentcache</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">persistentcache</span>::<span class="ident">storage</span>::{<span class="ident">FileStorage</span>, <span class="ident">RedisStorage</span>};
+<span class="kw">use</span> <span class="ident">persistentcache_procmacro</span>::<span class="ident">persistent_cache</span>;
 
-<span class="kw">fn</span> <span class="ident">add_two</span>(<span class="ident">a</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span><span class="op">&gt;&gt;</span> {
+<span class="comment">// Either store it in a `FileStorage`...</span>
+<span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
+<span class="attribute">#[<span class="ident">params</span>(<span class="ident">FileStorage</span>, <span class="string">&quot;test_dir&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">add_two_file</span>(<span class="ident">a</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Calculating {} + 2...&quot;</span>, <span class="ident">a</span>);
-    <span class="prelude-val">Ok</span>(<span class="ident">a</span> <span class="op">+</span> <span class="number">2</span>)
+    <span class="ident">a</span> <span class="op">+</span> <span class="number">2</span>
+}
+
+<span class="comment">// ... or in a `RedisStorage`</span>
+<span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
+<span class="attribute">#[<span class="ident">params</span>(<span class="ident">RedisStorage</span>, <span class="string">&quot;redis://127.0.0.1&quot;</span>)]</span>
+<span class="kw">fn</span> <span class="ident">add_two_redis</span>(<span class="ident">a</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Calculating {} + 2...&quot;</span>, <span class="ident">a</span>);
+    <span class="ident">a</span> <span class="op">+</span> <span class="number">2</span>
 }
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">storage</span>::<span class="ident">redis</span>::<span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
     <span class="comment">// Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">2</span>)).<span class="ident">unwrap</span>());
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>, <span class="ident">add_two_file</span>(<span class="number">2</span>));
     <span class="comment">// Value will be cached from Redis, will only print &quot;4&quot;</span>
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">2</span>)).<span class="ident">unwrap</span>());
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>, <span class="ident">add_two_file</span>(<span class="number">2</span>));
     <span class="comment">// Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">3</span>)).<span class="ident">unwrap</span>());
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>, <span class="ident">add_two_redis</span>(<span class="number">3</span>));
     <span class="comment">// Value will be cached from Redis, will only print &quot;5&quot;</span>
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">3</span>)).<span class="ident">unwrap</span>());
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">s</span>, <span class="ident">add_two_redis</span>(<span class="number">3</span>));
 }</pre>
 <p>This will print:</p>
 <pre><code class="language-text">Calculating 2 + 2...
@@ -124,14 +145,12 @@ Subsequent calls to the function with already evaluated parameters are then fetc
 storage.
 The advantage of this approach over <code>cache!</code> is that the function is modified and hence every
 call to the function will automatically take care of the caching. Furthermore it works with
-recursive calls. However, caching cannot be 'turned off' anymore.
-No assumption about the return type are made in this case. The function returns the same type
-as the initial function definition.</p>
+recursive calls. However, caching cannot be disabled anymore.
+The return value needs to implemend the <code>Serializable</code> trait.</p>
 <h2 id="example-1" class="section-header"><a href="#example-1">Example</a></h2>
 <pre class="rust rust-example-rendered">
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">lazy_static</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">persistentcache</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">bincode</span>;
 <span class="kw">use</span> <span class="ident">persistentcache</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// Either store it in a `FileStorage`...</span>
@@ -149,14 +168,53 @@ as the initial function definition.</p>
 });
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="comment">/*// Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;
-    println!(&quot;{}&quot;, s, add_two_file(2));
-    // Value will be cached from Redis, will only print &quot;4&quot;
-    println!(&quot;{}&quot;, s, add_two_file(2));
-    // Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;
-    println!(&quot;{}&quot;, s, add_two_redis(3));
-    // Value will be cached from Redis, will only print &quot;5&quot;
-    println!(&quot;{}&quot;, s, add_two_redis(3));*/</span>
+    <span class="comment">// Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">add_two_file</span>(<span class="number">2</span>));
+    <span class="comment">// Value will be cached from Redis, will only print &quot;4&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">add_two_file</span>(<span class="number">2</span>));
+    <span class="comment">// Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">add_two_redis</span>(<span class="number">3</span>));
+    <span class="comment">// Value will be cached from Redis, will only print &quot;5&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">add_two_redis</span>(<span class="number">3</span>));
+}</pre>
+<p>This will print:</p>
+<pre><code class="language-text">Calculating 2 + 2...
+4
+4
+Calculating 3 + 2...
+5
+5
+</code></pre>
+<h1 id="caching-function-calls-with-cache" class="section-header"><a href="#caching-function-calls-with-cache">Caching function calls with <code>cache!</code></a></h1>
+<p>The macro <code>cache!</code> caches a function call. The advantage of this approach over the macro
+<code>cache_func!</code> and the procedual macro <code>#[peristent_cache]</code> is that different storages can be
+used for different calls. Furthermore the function can still be called without caching if
+desired.
+However, in case of recursive functions, this will most likely not work as expected because the
+recursive calls will not be cached.
+The macro expects the function to return a value of type <code>Result&lt;T, Box&lt;std::error::Error&gt;&gt;</code>.</p>
+<h2 id="example-2" class="section-header"><a href="#example-2">Example</a></h2>
+<pre class="rust rust-example-rendered">
+<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">redundant_closure_call</span>)]</span>
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">persistentcache</span>;
+<span class="kw">use</span> <span class="ident">persistentcache</span>::<span class="kw-2">*</span>;
+
+<span class="kw">fn</span> <span class="ident">add_two</span>(<span class="ident">a</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Calculating {} + 2...&quot;</span>, <span class="ident">a</span>);
+    <span class="ident">a</span> <span class="op">+</span> <span class="number">2</span>
+}
+
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">storage</span>::<span class="ident">redis</span>::<span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
+    <span class="comment">// Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">2</span>)));
+    <span class="comment">// Value will be cached from Redis, will only print &quot;4&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">2</span>)));
+    <span class="comment">// Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">3</span>)));
+    <span class="comment">// Value will be cached from Redis, will only print &quot;5&quot;</span>
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">add_two</span>(<span class="number">3</span>)));
 }</pre>
 <p>This will print:</p>
 <pre><code class="language-text">Calculating 2 + 2...
@@ -177,9 +235,11 @@ Calculating 3 + 2...
 <p>This crate is inspired by <a href="https://github.com/havoc-io/owls-cache">owls-cache</a> and its primary
 goal is to teach myself Rust. While working on it, I realised that a similar crate already
 exists: <a href="https://github.com/jaemk/cached">cached-rs</a>. I've borrowed a couple of ideas from
-there. Have a look at it, it looks much more professional than this crate and almost certainly
-has better developers. Unfortunately it lacks the 'persistent' part and the caches cannot be
-shared between processes/threads, but it should be fairly easy to extend it.</p>
+there.  I suggest you have a look at the cached-rs crate, too.  Unfortunately it lacks the
+'persistent' part and the caches cannot be shared between processes/threads, but it should be
+fairly easy to extend it. Furthermore, the excellent
+<a href="https://github.com/termoshtt/accell">accel</a> has been very helpful. I shamelessly copied parts
+of it for the <code>persistentcache_procmacro</code> crate.</p>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                        <tr class=' module-item'>

@@ -4,24 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `src/storage/mod.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
+    <meta name="description" content="API documentation for the Rust `persistent_cache` fn in crate `persistentcache_procmacro`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, persistent_cache">
 
-    <title>mod.rs.html -- source</title>
+    <title>persistentcache_procmacro::persistent_cache - Rust</title>
 
-    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css"
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
           id="mainThemeStyle">
     
-    <link rel="stylesheet" type="text/css" href="../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../main.css" id="themeStyle">
-    <script src="../../../storage.js"></script>
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
+    <script src="../storage.js"></script>
     
 
     
     
 </head>
-<body class="rustdoc source">
+<body class="rustdoc fn">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,16 +34,16 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        
+        <div class="sidebar-elems"><p class='location'><a href='index.html'>persistentcache_procmacro</a></p><script>window.sidebarCurrent = {name: 'persistent_cache', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
         <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
         </button>
         <div id="theme-choices"></div>
     </div>
-    <script src="../../../theme.js"></script>
+    <script src="../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -55,45 +55,13 @@
         </form>
     </nav>
 
-    <section id='main' class="content"><pre class="line-numbers"><span id="1"> 1</span>
-<span id="2"> 2</span>
-<span id="3"> 3</span>
-<span id="4"> 4</span>
-<span id="5"> 5</span>
-<span id="6"> 6</span>
-<span id="7"> 7</span>
-<span id="8"> 8</span>
-<span id="9"> 9</span>
-<span id="10">10</span>
-<span id="11">11</span>
-<span id="12">12</span>
-<span id="13">13</span>
-<span id="14">14</span>
-<span id="15">15</span>
-<span id="16">16</span>
-<span id="17">17</span>
-<span id="18">18</span>
-</pre><pre class="rust ">
-<span class="comment">// Copyright 2018 Stefan Kroboth</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://apache.org/licenses/LICENSE-2.0&gt; or the MIT license &lt;LICENSE-MIT or</span>
-<span class="comment">// http://opensource.org/licenses/MIT&gt;, at your option. This file may not be</span>
-<span class="comment">// copied, modified, or distributed except according to those terms.</span>
-
-<span class="doccomment">//! Implementation of different persistent storages. Currently on disk (`FileStorage`) and in Redis</span>
-<span class="doccomment">//! (`RedisStorage`).</span>
-
-<span class="doccomment">/// `RedisStorage`</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">redis</span>;
-<span class="doccomment">/// `FileStorage`</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">file</span>;
-
-<span class="doccomment">/// Bring them into scope</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">redis</span>::<span class="ident">RedisStorage</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">file</span>::<span class="ident">FileStorage</span>;
-</pre>
-</section>
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Function <a href='index.html'>persistentcache_procmacro</a>::<wbr><a class="fn" href=''>persistent_cache</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/persistentcache_procmacro/lib.rs.html#72-76' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn persistent_cache(_attr: <a class="struct" href="https://doc.rust-lang.org/nightly/proc_macro/struct.TokenStream.html" title="struct proc_macro::TokenStream">TokenStream</a>, func: <a class="struct" href="https://doc.rust-lang.org/nightly/proc_macro/struct.TokenStream.html" title="struct proc_macro::TokenStream">TokenStream</a>) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/proc_macro/struct.TokenStream.html" title="struct proc_macro::TokenStream">TokenStream</a></pre></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -151,10 +119,10 @@
     
 
     <script>
-        window.rootPath = "../../../";
-        window.currentCrate = "persistentcache";
+        window.rootPath = "../";
+        window.currentCrate = "persistentcache_procmacro";
     </script>
-    <script src="../../../main.js"></script>
-    <script defer src="../../../search-index.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
 </body>
 </html>

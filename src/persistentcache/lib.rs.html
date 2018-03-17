@@ -10,7 +10,8 @@
     <title>lib.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
+          id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../dark.css">
     <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
@@ -434,6 +435,72 @@
 <span id="378">378</span>
 <span id="379">379</span>
 <span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Stefan Kroboth</span>
 <span class="comment">//</span>
@@ -444,60 +511,80 @@
 
 <span class="doccomment">//! Macros for persistently caching function calls</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The values are cached either in files or on Redis. Two storages, `FileStorage` and `RedisStorage`</span>
-<span class="doccomment">//! are provided.</span>
+<span class="doccomment">//! The values are cached either in files or on Redis. Two storages, `FileStorage` and</span>
+<span class="doccomment">//! `RedisStorage` are provided.</span>
 <span class="doccomment">//! Caching is performed based on the function name and function parameters, meaning that for every</span>
 <span class="doccomment">//! combination of function and parameters, the returned value is stored in a storage. Subsequent</span>
 <span class="doccomment">//! calls of this function with the same parameters are not computed, but instead fetched from the</span>
 <span class="doccomment">//! storage. This can lead to an decrease in computing time in case the function call is</span>
 <span class="doccomment">//! computationally more expensive than fetching the value from the storage. The storages are</span>
 <span class="doccomment">//! persistent (stored on disk) and can be shared between different threads and processes.</span>
-<span class="doccomment">//! All Parameters to the function need to be Hashable. The return value needs to be serializeable</span>
-<span class="doccomment">//! by the crate `bincode`.</span>
+<span class="doccomment">//! All parameters of the function to be cached need to be Hashable. The return value needs to be</span>
+<span class="doccomment">//! serializeable by the crate `bincode`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! There are two different ways of caching:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! 1) Caching individual function calls with the `cache!` macro. This way the function can still</span>
+<span class="doccomment">//!    be used without caching if necessary.</span>
+<span class="doccomment">//! 2) Caching every function call. For this, either the `cache_func!` macro or a procedural macro</span>
+<span class="doccomment">//!    can be used. The latter is achieved with the compiler directive `#[persistent_cache]` of the</span>
+<span class="doccomment">//!    subcrate `persistentcache_procmacro`.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # Setup</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Add the following dependencies to your projet:</span>
+<span class="doccomment">//! Add the following dependencies to your project:</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```text</span>
 <span class="doccomment">//! [dependencies]</span>
 <span class="doccomment">//! lazy_static = &quot;*&quot;</span>
-<span class="doccomment">//! bincode = &quot;*&quot;</span>
 <span class="doccomment">//! persistentcache = &quot;*&quot;</span>
+<span class="doccomment">//! persistentcache_procmacro = &quot;*&quot;  # Only needed for `#[peristent_cache]`</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! # Caching function calls with `cache!`</span>
+<span class="doccomment">//! # Caching a function with `#[persistent_cache]`</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The macro `cache!` caches a function call. The advantage of this approach over the macro</span>
-<span class="doccomment">//! `cache_func` is that different storages can be used for different calls. Furthermore the</span>
-<span class="doccomment">//! function can still be called without caching if desired.</span>
-<span class="doccomment">//! However, in case of recursive functions, this will most likely not work as expected because the</span>
-<span class="doccomment">//! recursive calls will not be cached.</span>
-<span class="doccomment">//! The macro expects the function to return a value of type `Result&lt;T, Box&lt;std::error::Error&gt;&gt;`.</span>
+<span class="doccomment">//! The easiest way to cache all calls to a function is by preceding it with the</span>
+<span class="doccomment">//! `#[persistent_cache]` directive. This modifies the function such that values never computed</span>
+<span class="doccomment">//! before are computed and cached in a storage. Already computed values are fetched from said</span>
+<span class="doccomment">//! storage without computing. The return type needs to implement the `Serializable` trait.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Example</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
-<span class="doccomment">//! #![allow(redundant_closure_call)]</span>
-<span class="doccomment">//! extern crate bincode;</span>
-<span class="doccomment">//! #[macro_use] extern crate persistentcache;</span>
+<span class="doccomment">//! #[macro_use]</span>
+<span class="doccomment">//! extern crate lazy_static;</span>
+<span class="doccomment">//! #[macro_use]</span>
+<span class="doccomment">//! extern crate persistentcache;</span>
+<span class="doccomment">//! extern crate persistent_procmacro;</span>
 <span class="doccomment">//! use persistentcache::*;</span>
+<span class="doccomment">//! use persistentcache::storage::{FileStorage, RedisStorage};</span>
+<span class="doccomment">//! use persistentcache_procmacro::persistent_cache;</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! fn add_two(a: u64) -&gt; Result&lt;u64, Box&lt;std::error::Error&gt;&gt; {</span>
+<span class="doccomment">//! // Either store it in a `FileStorage`...</span>
+<span class="doccomment">//! #[persistent_cache]</span>
+<span class="doccomment">//! #[params(FileStorage, &quot;test_dir&quot;)]</span>
+<span class="doccomment">//! fn add_two_file(a: u64) -&gt; u64 {</span>
 <span class="doccomment">//!     println!(&quot;Calculating {} + 2...&quot;, a);</span>
-<span class="doccomment">//!     Ok(a + 2)</span>
+<span class="doccomment">//!     a + 2</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! // ... or in a `RedisStorage`</span>
+<span class="doccomment">//! #[persistent_cache]</span>
+<span class="doccomment">//! #[params(RedisStorage, &quot;redis://127.0.0.1&quot;)]</span>
+<span class="doccomment">//! fn add_two_redis(a: u64) -&gt; u64 {</span>
+<span class="doccomment">//!     println!(&quot;Calculating {} + 2...&quot;, a);</span>
+<span class="doccomment">//!     a + 2</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     let s = storage::redis::RedisStorage::new(&quot;redis://127.0.0.1&quot;).unwrap();</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(2)).unwrap());</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(2)).unwrap());</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(3)).unwrap());</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(3)).unwrap());</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -521,16 +608,14 @@
 <span class="doccomment">//! storage.</span>
 <span class="doccomment">//! The advantage of this approach over `cache!` is that the function is modified and hence every</span>
 <span class="doccomment">//! call to the function will automatically take care of the caching. Furthermore it works with</span>
-<span class="doccomment">//! recursive calls. However, caching cannot be &#39;turned off&#39; anymore.</span>
-<span class="doccomment">//! No assumption about the return type are made in this case. The function returns the same type</span>
-<span class="doccomment">//! as the initial function definition.</span>
+<span class="doccomment">//! recursive calls. However, caching cannot be disabled anymore.</span>
+<span class="doccomment">//! The return value needs to implemend the `Serializable` trait.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Example</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! #[macro_use] extern crate lazy_static;</span>
 <span class="doccomment">//! #[macro_use] extern crate persistentcache;</span>
-<span class="doccomment">//! extern crate bincode;</span>
 <span class="doccomment">//! use persistentcache::*;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! // Either store it in a `FileStorage`...</span>
@@ -548,14 +633,14 @@
 <span class="doccomment">//! });</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     /*// Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
+<span class="doccomment">//!     // Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file(2));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;4&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_file(2));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file(2));</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;5&quot;</span>
-<span class="doccomment">//!     println!(&quot;{}&quot;, s, add_two_redis(3));*/</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -569,6 +654,55 @@
 <span class="doccomment">//! 5</span>
 <span class="doccomment">//! 5</span>
 <span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Caching function calls with `cache!`</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The macro `cache!` caches a function call. The advantage of this approach over the macro</span>
+<span class="doccomment">//! `cache_func!` and the procedual macro `#[peristent_cache]` is that different storages can be</span>
+<span class="doccomment">//! used for different calls. Furthermore the function can still be called without caching if</span>
+<span class="doccomment">//! desired.</span>
+<span class="doccomment">//! However, in case of recursive functions, this will most likely not work as expected because the</span>
+<span class="doccomment">//! recursive calls will not be cached.</span>
+<span class="doccomment">//! The macro expects the function to return a value of type `Result&lt;T, Box&lt;std::error::Error&gt;&gt;`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Example</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! #![allow(redundant_closure_call)]</span>
+<span class="doccomment">//! #[macro_use]</span>
+<span class="doccomment">//! extern crate persistentcache;</span>
+<span class="doccomment">//! use persistentcache::*;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! fn add_two(a: u64) -&gt; u64 {</span>
+<span class="doccomment">//!     println!(&quot;Calculating {} + 2...&quot;, a);</span>
+<span class="doccomment">//!     a + 2</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! fn main() {</span>
+<span class="doccomment">//!     let s = storage::redis::RedisStorage::new(&quot;redis://127.0.0.1&quot;).unwrap();</span>
+<span class="doccomment">//!     // Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(2)));</span>
+<span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;4&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(2)));</span>
+<span class="doccomment">//!     // Function is called and will print &quot;Calculating 3 + 2...&quot; and &quot;5&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(3)));</span>
+<span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;5&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(3)));</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This will print:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```text</span>
+<span class="doccomment">//! Calculating 2 + 2...</span>
+<span class="doccomment">//! 4</span>
+<span class="doccomment">//! 4</span>
+<span class="doccomment">//! Calculating 3 + 2...</span>
+<span class="doccomment">//! 5</span>
+<span class="doccomment">//! 5</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # Implementing other storages</span>
 <span class="doccomment">//!</span>
@@ -589,21 +723,19 @@
 <span class="doccomment">//! This crate is inspired by [owls-cache](https://github.com/havoc-io/owls-cache) and its primary</span>
 <span class="doccomment">//! goal is to teach myself Rust. While working on it, I realised that a similar crate already</span>
 <span class="doccomment">//! exists: [cached-rs](https://github.com/jaemk/cached). I&#39;ve borrowed a couple of ideas from</span>
-<span class="doccomment">//! there. Have a look at it, it looks much more professional than this crate and almost certainly</span>
-<span class="doccomment">//! has better developers. Unfortunately it lacks the &#39;persistent&#39; part and the caches cannot be</span>
-<span class="doccomment">//! shared between processes/threads, but it should be fairly easy to extend it.</span>
+<span class="doccomment">//! there.  I suggest you have a look at the cached-rs crate, too.  Unfortunately it lacks the</span>
+<span class="doccomment">//! &#39;persistent&#39; part and the caches cannot be shared between processes/threads, but it should be</span>
+<span class="doccomment">//! fairly easy to extend it. Furthermore, the excellent</span>
+<span class="doccomment">//! [accel](https://github.com/termoshtt/accell) has been very helpful. I shamelessly copied parts</span>
+<span class="doccomment">//! of it for the `persistentcache_procmacro` crate.</span>
 <span class="doccomment">//!</span>
 <span class="attribute">#![<span class="ident">recursion_limit</span> <span class="op">=</span> <span class="string">&quot;1024&quot;</span>]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">feature</span>(<span class="ident">plugin</span>))]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">plugin</span>(<span class="ident">clippy</span>))]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">allow</span>(<span class="ident">redundant_closure_call</span>))]</span>
-<span class="comment">// #![feature(trace_macros)]</span>
-<span class="comment">// #![feature(log_syntax)]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="comment">// #![feature(custom_attribute)]</span>
 <span class="attribute">#![<span class="ident">feature</span>(<span class="ident">proc_macro</span>)]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">bincode</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">error_chain</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">fs2</span>;
@@ -621,7 +753,6 @@
             <span class="ident">Redis</span>(::<span class="ident">redis</span>::<span class="ident">RedisError</span>);
             <span class="ident">Regex</span>(::<span class="ident">regex</span>::<span class="ident">Error</span>);
             <span class="ident">IO</span>(::<span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span>);
-            <span class="ident">Bincode</span>(::<span class="ident">bincode</span>::<span class="ident">Error</span>);
         }
     }
 }
@@ -658,37 +789,40 @@
     <span class="kw">use</span> <span class="ident">storage</span>::<span class="ident">file</span>::<span class="ident">FileStorage</span>;
     <span class="kw">use</span> <span class="ident">persistentcache_procmacro</span>::<span class="ident">persistent_cache</span>;
 
-    <span class="kw">fn</span> <span class="ident">test_func_1</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span> <span class="op">+</span> <span class="ident">NumCast</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_func_1</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span> <span class="op">+</span> <span class="ident">NumCast</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
         <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">ten</span>: <span class="ident">T</span> <span class="op">=</span> <span class="ident">NumCast</span>::<span class="ident">from</span>(<span class="number">10_i64</span>).<span class="ident">unwrap</span>();
-        <span class="prelude-val">Ok</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">ten</span>)
+        <span class="ident">a</span> <span class="op">*</span> <span class="ident">ten</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">test_func_2</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">b</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_func_2</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">b</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
         <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>)
+        <span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">test_func_3</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Copy</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">test_func_3</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Copy</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
-        <span class="prelude-val">Ok</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">a</span>[<span class="number">1</span>], <span class="ident">a</span>[<span class="number">0</span>]])
+        <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">a</span>[<span class="number">1</span>], <span class="ident">a</span>[<span class="number">0</span>]]
     }
 
-    <span class="kw">fn</span> <span class="ident">throw_error</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(::<span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(::<span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Other</span>, <span class="string">&quot;fu&quot;</span>).<span class="ident">into</span>())
+    <span class="kw">fn</span> <span class="ident">panic</span>() <span class="op">-&gt;</span> () {
+        <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;nothing&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fib</span>() {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">cache_func</span><span class="macro">!</span>(<span class="ident">Redis</span>, <span class="string">&quot;redis://127.0.0.1&quot;</span>,
+        <span class="macro">cache_func</span><span class="macro">!</span>(
+            <span class="ident">Redis</span>,
+            <span class="string">&quot;redis://127.0.0.1&quot;</span>,
             <span class="kw">fn</span> <span class="ident">fib</span>(<span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
-                <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">n</span> <span class="op">==</span><span class="number">1</span> {
-                    <span class="kw">return</span> <span class="ident">n</span>
+                <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">1</span> {
+                    <span class="kw">return</span> <span class="ident">n</span>;
                 }
-                <span class="ident">fib</span>(<span class="ident">n</span><span class="op">-</span><span class="number">1</span>) <span class="op">+</span> <span class="ident">fib</span>(<span class="ident">n</span><span class="op">-</span><span class="number">2</span>)
-            });
+                <span class="ident">fib</span>(<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">+</span> <span class="ident">fib</span>(<span class="ident">n</span> <span class="op">-</span> <span class="number">2</span>)
+            }
+        );
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">fib</span>(<span class="number">10</span>), <span class="number">55</span>);
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
     }
@@ -697,10 +831,13 @@
     <span class="kw">fn</span> <span class="ident">test_func</span>() {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">cache_func</span><span class="macro">!</span>(<span class="ident">File</span>, <span class="string">&quot;test&quot;</span>,
+        <span class="macro">cache_func</span><span class="macro">!</span>(
+            <span class="ident">File</span>,
+            <span class="string">&quot;test&quot;</span>,
             <span class="kw">fn</span> <span class="ident">add_two</span>(<span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
                 <span class="ident">n</span> <span class="op">+</span> <span class="number">2</span>
-            });
+            }
+        );
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">12</span>, <span class="ident">add_two</span>(<span class="number">10</span>));
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
     }
@@ -711,6 +848,7 @@
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
 
         <span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
+        <span class="attribute">#[<span class="ident">params</span>(<span class="ident">FileStorage</span>, <span class="string">&quot;file_test&quot;</span>)]</span>
         <span class="kw">fn</span> <span class="ident">add_two</span>(<span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
             <span class="ident">n</span> <span class="op">+</span> <span class="number">2</span>
         }
@@ -726,6 +864,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
 
         <span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
+        <span class="attribute">#[<span class="ident">params</span>(<span class="ident">FileStorage</span>, <span class="string">&quot;file_test&quot;</span>)]</span>
         <span class="kw">fn</span> <span class="ident">test_func_proc</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
             <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
             <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">a</span>[<span class="number">1</span>], <span class="ident">a</span>[<span class="number">0</span>]]
@@ -744,12 +883,12 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">2</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
     }
@@ -760,12 +899,12 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">2</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
     }
@@ -778,10 +917,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_2</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_2</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_2</span>(<span class="ident">b</span>, <span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_2</span>(<span class="ident">b</span>, <span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
     }
 
@@ -791,18 +930,12 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>],
-            <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>()
-        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">2</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">1</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>],
-            <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)).<span class="ident">unwrap</span>()
-        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
     }
@@ -812,7 +945,7 @@
     <span class="kw">fn</span> <span class="ident">failing_function</span>() {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
-        <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">throw_error</span>()).<span class="ident">unwrap</span>();
+        <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">panic</span>());
     }
 }
 </pre>
