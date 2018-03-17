@@ -1,7 +1,16 @@
 [package]
 name = "persistentcache_procmacro"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Procedural macro for persistently caching functions (dependency of persistentcache crate)"
+documentation = "https://stefan-k.github.io/persistentcache-rs/persistentcache/"
+homepage = "https://github.com/stefan-k/persistentcache-rs"
+repository = "https://github.com/stefan-k/persistentcache-rs"
+readme = "README.md"
+keywords = ["persistent", "caching", "science", "HPC", "memoization"]
+categories = ["caching", "science"]
+license-file = "LICENSE-APACHE"
 
 [lib]
 proc-macro = true
