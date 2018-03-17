@@ -2,13 +2,15 @@
 
 # persistentcache-rs
 
-persistentcache-rs implements to macros `cache!` and `cache_func!` to cache function calls or entire functions.
+persistentcache-rs implements the macros `cache!` and `cache_func!` and the procedural macro `#[peristent_cache]` to cache function calls or entire functions.
 The implemented storages are persistent and can be shared between processes.
 Storages either store on disk (`FileStorage`) or Redis (`RedisStorage`).
 
-The documentation can be found [here](https://stefan-k.github.io/persistentcache-rs/persistentcache).
+The documentation and examples can be found [here](https://stefan-k.github.io/persistentcache-rs/persistentcache).
 
 ## Example
+
+Here is an example using the `#[peristent_cache]` procedural macro:
 
 ```rust
 #![feature(proc_macro)]
