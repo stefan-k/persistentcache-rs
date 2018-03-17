@@ -73,14 +73,14 @@
 //! }
 //!
 //! fn main() {
-//!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
+//!     // Function is called and will print "Calculating 2 + 2..." and "4"
 //!     println!("{}", s, add_two_file(2));
 //!     // Value will be cached from Redis, will only print "4"
 //!     println!("{}", s, add_two_file(2));
 //!     // Function is called and will print "Calculating 3 + 2..." and "5"
 //!     println!("{}", s, add_two_redis(3));
 //!     // Value will be cached from Redis, will only print "5"
-//!     println!("{}", s, add_two_redis(3));*/
+//!     println!("{}", s, add_two_redis(3));
 //! }
 //! ```
 //!
@@ -129,14 +129,14 @@
 //! });
 //!
 //! fn main() {
-//!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
-//!     println!("{}", s, add_two_file(2));
+//!     // Function is called and will print "Calculating 2 + 2..." and "4"
+//!     println!("{}", add_two_file(2));
 //!     // Value will be cached from Redis, will only print "4"
-//!     println!("{}", s, add_two_file(2));
+//!     println!("{}", add_two_file(2));
 //!     // Function is called and will print "Calculating 3 + 2..." and "5"
-//!     println!("{}", s, add_two_redis(3));
+//!     println!("{}", add_two_redis(3));
 //!     // Value will be cached from Redis, will only print "5"
-//!     println!("{}", s, add_two_redis(3));*/
+//!     println!("{}", add_two_redis(3));
 //! }
 //! ```
 //!
