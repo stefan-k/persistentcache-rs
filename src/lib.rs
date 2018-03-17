@@ -28,7 +28,7 @@
 //!
 //! # Setup
 //!
-//! Add the following dependencies to your projet:
+//! Add the following dependencies to your project:
 //!
 //! ```text
 //! [dependencies]
@@ -42,7 +42,7 @@
 //! The easiest way to cache all calls to a function is by preceding it with the
 //! `#[persistent_cache]` directive. This modifies the function such that values never computed
 //! before are computed and cached in a storage. Already computed values are fetched from said
-//! storage without computing.
+//! storage without computing. The return type needs to implement the `Serializable` trait.
 //!
 //! ## Example
 //!
