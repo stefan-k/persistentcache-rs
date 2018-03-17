@@ -85,21 +85,29 @@ macro_rules! cache {
             }
             let var_name = format!("{}_{}_{}_{:?}", PREFIX, $prefix, stringify!($func), s.finish());
 
-            let result: Vec<u8> = $storage.get(&var_name)?;
+            let result: Vec<u8> = $storage.get(&var_name).unwrap();
+            let res;
             match result.len() {
                 0 => {
-                    match $func($($x),*) {
-                        Ok(res) => {
-                            $storage.set(&var_name, &bincode::serialize(&res)?)?;
-                            Ok(res)
-                        }
-                        Err(e) => Err(e)
-                    }
+                    res = $func($($x),*);
+                    $storage.set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
+                    res
+                    // match $func($($x),*) {
+                    //     Ok(res) => {
+                    //         $storage.set(&var_name, &bincode::serialize(&res)?)?;
+                    //         Ok(res)
+                    //     }
+                    //     Err(e) => Err(e)
+                    // }
                 },
-                _ => match bincode::deserialize(&result) {
-                    Ok(res) => Ok(res),
-                    Err(e) => Err(e.into()), // I have no idea what I am doing.
-                }
+                // _ => match bincode::deserialize(&result) {
+                //     Ok(res) => res,
+                //     Err(e) => panic!(e.into()), // I have no idea what I am doing.
+                // }
+                _ => {
+                    res = bincode::deserialize(&result).unwrap();
+                    res
+                } 
             }
        })()
     }

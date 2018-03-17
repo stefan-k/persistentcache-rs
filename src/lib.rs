@@ -38,115 +38,9 @@
 //! persistentcache_procmacro = "*"  # Only needed for `#[peristent_cache]`
 //! ```
 //!
-//! # Caching function calls with `cache!`
+//! # Caching a function with `#[persistent_cache]`
 //!
-//! The macro `cache!` caches a function call. The advantage of this approach over the macro
-//! `cache_func` and the procedual macro `#[peristent_cache]` is that different storages can be
-//! used for different calls. Furthermore the function can still be called without caching if
-//! desired.
-//! However, in case of recursive functions, this will most likely not work as expected because the
-//! recursive calls will not be cached.
-//! The macro expects the function to return a value of type `Result<T, Box<std::error::Error>>`.
-//!
-//! ## Example
-//!
-//! ```
-//! #![allow(redundant_closure_call)]
-//! extern crate bincode;
-//! #[macro_use]
-//! extern crate persistentcache;
-//! use persistentcache::*;
-//!
-//! fn add_two(a: u64) -> Result<u64, Box<std::error::Error>> {
-//!     println!("Calculating {} + 2...", a);
-//!     Ok(a + 2)
-//! }
-//!
-//! fn main() {
-//!     let s = storage::redis::RedisStorage::new("redis://127.0.0.1").unwrap();
-//!     // Function is called and will print "Calculating 2 + 2..." and "4"
-//!     println!("{}", cache!(s, add_two(2)).unwrap());
-//!     // Value will be cached from Redis, will only print "4"
-//!     println!("{}", cache!(s, add_two(2)).unwrap());
-//!     // Function is called and will print "Calculating 3 + 2..." and "5"
-//!     println!("{}", cache!(s, add_two(3)).unwrap());
-//!     // Value will be cached from Redis, will only print "5"
-//!     println!("{}", cache!(s, add_two(3)).unwrap());
-//! }
-//! ```
-//!
-//! This will print:
-//!
-//! ```text
-//! Calculating 2 + 2...
-//! 4
-//! 4
-//! Calculating 3 + 2...
-//! 5
-//! 5
-//! ```
-//!
-//! # Caching a function with `cache_func!`
-//!
-//! The macro `cache_func!` is wrapped around a function definition and modifies the function such
-//! that the function body is executed and the resulting value is both returned and stored in a
-//! provided storage in case the given combination of parameters hasn't been evaluated before.
-//! Subsequent calls to the function with already evaluated parameters are then fetched from the
-//! storage.
-//! The advantage of this approach over `cache!` is that the function is modified and hence every
-//! call to the function will automatically take care of the caching. Furthermore it works with
-//! recursive calls. However, caching cannot be 'turned off' anymore.
-//! No assumption about the return type are made in this case. The function returns the same type
-//! as the initial function definition.
-//!
-//! ## Example
-//!
-//! ```
-//! #[macro_use] extern crate lazy_static;
-//! #[macro_use] extern crate persistentcache;
-//! extern crate bincode;
-//! use persistentcache::*;
-//!
-//! // Either store it in a `FileStorage`...
-//! cache_func!(File, "test_dir",
-//! fn add_two_file(a: u64) -> u64 {
-//!     println!("Calculating {} + 2...", a);
-//!     a + 2
-//! });
-//!
-//! // ... or in a `RedisStorage`
-//! cache_func!(Redis, "redis://127.0.0.1",
-//! fn add_two_redis(a: u64) -> u64 {
-//!     println!("Calculating {} + 2...", a);
-//!     a + 2
-//! });
-//!
-//! fn main() {
-//!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
-//!     println!("{}", s, add_two_file(2));
-//!     // Value will be cached from Redis, will only print "4"
-//!     println!("{}", s, add_two_file(2));
-//!     // Function is called and will print "Calculating 3 + 2..." and "5"
-//!     println!("{}", s, add_two_redis(3));
-//!     // Value will be cached from Redis, will only print "5"
-//!     println!("{}", s, add_two_redis(3));*/
-//! }
-//! ```
-//!
-//! This will print:
-//!
-//! ```text
-//! Calculating 2 + 2...
-//! 4
-//! 4
-//! Calculating 3 + 2...
-//! 5
-//! 5
-//! ```
-//!
-//! # Caching a function with `#[peristent_cache]`
-//!
-//! TODO
+//! todo
 //!
 //! ## Example
 //!
@@ -199,6 +93,113 @@
 //! 5
 //! 5
 //! ```
+//!
+//! # Caching a function with `cache_func!`
+//!
+//! The macro `cache_func!` is wrapped around a function definition and modifies the function such
+//! that the function body is executed and the resulting value is both returned and stored in a
+//! provided storage in case the given combination of parameters hasn't been evaluated before.
+//! Subsequent calls to the function with already evaluated parameters are then fetched from the
+//! storage.
+//! The advantage of this approach over `cache!` is that the function is modified and hence every
+//! call to the function will automatically take care of the caching. Furthermore it works with
+//! recursive calls. However, caching cannot be disabled anymore.
+//! The return value needs to implemend the `Serializable` trait.
+//!
+//! ## Example
+//!
+//! ```
+//! #[macro_use] extern crate lazy_static;
+//! #[macro_use] extern crate persistentcache;
+//! extern crate bincode;
+//! use persistentcache::*;
+//!
+//! // Either store it in a `FileStorage`...
+//! cache_func!(File, "test_dir",
+//! fn add_two_file(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! });
+//!
+//! // ... or in a `RedisStorage`
+//! cache_func!(Redis, "redis://127.0.0.1",
+//! fn add_two_redis(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! });
+//!
+//! fn main() {
+//!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
+//!     println!("{}", s, add_two_file(2));
+//!     // Value will be cached from Redis, will only print "4"
+//!     println!("{}", s, add_two_file(2));
+//!     // Function is called and will print "Calculating 3 + 2..." and "5"
+//!     println!("{}", s, add_two_redis(3));
+//!     // Value will be cached from Redis, will only print "5"
+//!     println!("{}", s, add_two_redis(3));*/
+//! }
+//! ```
+//!
+//! This will print:
+//!
+//! ```text
+//! Calculating 2 + 2...
+//! 4
+//! 4
+//! Calculating 3 + 2...
+//! 5
+//! 5
+//! ```
+//!
+//!
+//! # Caching function calls with `cache!`
+//!
+//! The macro `cache!` caches a function call. The advantage of this approach over the macro
+//! `cache_func!` and the procedual macro `#[peristent_cache]` is that different storages can be
+//! used for different calls. Furthermore the function can still be called without caching if
+//! desired.
+//! However, in case of recursive functions, this will most likely not work as expected because the
+//! recursive calls will not be cached.
+//! The macro expects the function to return a value of type `Result<T, Box<std::error::Error>>`.
+//!
+//! ## Example
+//!
+//! ```
+//! #![allow(redundant_closure_call)]
+//! extern crate bincode;
+//! #[macro_use]
+//! extern crate persistentcache;
+//! use persistentcache::*;
+//!
+//! fn add_two(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! }
+//!
+//! fn main() {
+//!     let s = storage::redis::RedisStorage::new("redis://127.0.0.1").unwrap();
+//!     // Function is called and will print "Calculating 2 + 2..." and "4"
+//!     println!("{}", cache!(s, add_two(2)));
+//!     // Value will be cached from Redis, will only print "4"
+//!     println!("{}", cache!(s, add_two(2)));
+//!     // Function is called and will print "Calculating 3 + 2..." and "5"
+//!     println!("{}", cache!(s, add_two(3)));
+//!     // Value will be cached from Redis, will only print "5"
+//!     println!("{}", cache!(s, add_two(3)));
+//! }
+//! ```
+//!
+//! This will print:
+//!
+//! ```text
+//! Calculating 2 + 2...
+//! 4
+//! 4
+//! Calculating 3 + 2...
+//! 5
+//! 5
+//! ```
+//!
 //!
 //! # Implementing other storages
 //!
@@ -288,24 +289,24 @@ mod tests {
     use storage::file::FileStorage;
     use persistentcache_procmacro::persistent_cache;
 
-    fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> Result<T> {
+    fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> T {
         *counter += 1;
         let ten: T = NumCast::from(10_i64).unwrap();
-        Ok(a * ten)
+        a * ten
     }
 
-    fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> Result<T> {
+    fn test_func_2<T: Num>(a: T, b: T, counter: &mut i64) -> T {
         *counter += 1;
-        Ok(a * b)
+        a * b
     }
 
-    fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Result<Vec<T>> {
+    fn test_func_3<T: Copy>(a: &[T], counter: &mut i64) -> Vec<T> {
         *counter += 1;
-        Ok(vec![a[1], a[0]])
+        vec![a[1], a[0]]
     }
 
-    fn throw_error() -> Result<()> {
-        Err(::std::io::Error::new(::std::io::ErrorKind::Other, "fu").into())
+    fn panic() -> () {
+        panic!("nothing");
     }
 
     #[test]
@@ -376,12 +377,12 @@ mod tests {
         let mut counter: i64 = 0;
         let s = RedisStorage::new("redis://127.0.0.1").unwrap();
         s.flush().unwrap();
-        assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
+        assert_eq!(a * 10, test_func_1(a, &mut counter));
         assert_eq!(counter, 1);
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)));
         assert_eq!(counter, 2);
         let mut counter: i64 = 1;
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)));
         assert_eq!(counter, 1);
         s.flush().unwrap();
     }
@@ -392,12 +393,12 @@ mod tests {
         let mut counter: i64 = 0;
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        assert_eq!(a * 10, test_func_1(a, &mut counter).unwrap());
+        assert_eq!(a * 10, test_func_1(a, &mut counter));
         assert_eq!(counter, 1);
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)));
         assert_eq!(counter, 2);
         let mut counter: i64 = 1;
-        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)).unwrap());
+        assert_eq!(a * 10, cache!(s, test_func_1(a, &mut counter)));
         assert_eq!(counter, 1);
         s.flush().unwrap();
     }
@@ -410,10 +411,10 @@ mod tests {
         let mut counter: i64 = 0;
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        assert_eq!(a * b, cache!(s, test_func_2(a, b, &mut counter)).unwrap());
+        assert_eq!(a * b, cache!(s, test_func_2(a, b, &mut counter)));
         assert_eq!(counter, 1);
         let mut counter: i64 = 0;
-        assert_eq!(a * b, cache!(s, test_func_2(b, a, &mut counter)).unwrap());
+        assert_eq!(a * b, cache!(s, test_func_2(b, a, &mut counter)));
         assert_eq!(counter, 1);
     }
 
@@ -423,18 +424,12 @@ mod tests {
         let mut counter: i64 = 0;
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        assert_eq!(vec![2, 1], test_func_3(&a, &mut counter).unwrap());
+        assert_eq!(vec![2, 1], test_func_3(&a, &mut counter));
         assert_eq!(counter, 1);
-        assert_eq!(
-            vec![2, 1],
-            cache!(s, test_func_3(&a, &mut counter)).unwrap()
-        );
+        assert_eq!(vec![2, 1], cache!(s, test_func_3(&a, &mut counter)));
         assert_eq!(counter, 2);
         let mut counter: i64 = 1;
-        assert_eq!(
-            vec![2, 1],
-            cache!(s, test_func_3(&a, &mut counter)).unwrap()
-        );
+        assert_eq!(vec![2, 1], cache!(s, test_func_3(&a, &mut counter)));
         assert_eq!(counter, 1);
         s.flush().unwrap();
     }
@@ -444,6 +439,6 @@ mod tests {
     fn failing_function() {
         let s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
-        cache!(s, throw_error()).unwrap();
+        cache!(s, panic());
     }
 }
