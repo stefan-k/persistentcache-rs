@@ -95,10 +95,10 @@ fn function_persistenticator(func: &Function) -> TokenStream {
     let path: &str = attrs[1].trim_matches(quotes);
 
     let pers_func = quote!{
-        extern crate bincode as pers_pc_bincode;
-        use std::hash::{Hash, Hasher};
         #vis #fn_token #ident(#inputs) #output
         {
+            extern crate bincode;
+            use std::hash::{Hash, Hasher};
             lazy_static!{
                 static ref S: ::std::sync::Mutex<#storage> = ::std::sync::Mutex::new(#storage::new(#path).unwrap());
             };
@@ -124,12 +124,12 @@ fn function_persistenticator(func: &Function) -> TokenStream {
                 0 => {
                     // Computing and storing the value
                     let res = #block;
-                    S.lock().unwrap().set(&var_name, &pers_pc_bincode::serialize(&res).unwrap()).unwrap();
+                    S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
                     return res;
                 },
                 _ => {
                     // Fetching the value
-                    return pers_pc_bincode::deserialize(&result).unwrap()
+                    return bincode::deserialize(&result).unwrap()
                 },
             };
         }

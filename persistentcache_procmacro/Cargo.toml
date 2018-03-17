@@ -1,6 +1,6 @@
 [package]
 name = "persistentcache_procmacro"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Procedural macro for persistently caching functions (dependency of persistentcache crate)"
@@ -20,6 +20,7 @@ synom = "0.11.3"
 futures-await-quote = "0.4"
 proc-macro2 = { version = "0.1", features = ["unstable"] }
 lazy_static = "1.0.0"
+bincode = "1.0.0"
 
 [dependencies.futures-await-syn]
 version = "0.12"
