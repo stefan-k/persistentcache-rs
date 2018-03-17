@@ -47,11 +47,12 @@
 //! ## Example
 //!
 //! ```
+//! #![feature(proc_macro)]
 //! #[macro_use]
 //! extern crate lazy_static;
 //! #[macro_use]
 //! extern crate persistentcache;
-//! extern crate persistent_procmacro;
+//! extern crate persistentcache_procmacro;
 //! use persistentcache::*;
 //! use persistentcache::storage::{FileStorage, RedisStorage};
 //! use persistentcache_procmacro::persistent_cache;
@@ -74,13 +75,13 @@
 //!
 //! fn main() {
 //!     // Function is called and will print "Calculating 2 + 2..." and "4"
-//!     println!("{}", s, add_two_file(2));
+//!     println!("{}", add_two_file(2));
 //!     // Value will be cached from Redis, will only print "4"
-//!     println!("{}", s, add_two_file(2));
+//!     println!("{}", add_two_file(2));
 //!     // Function is called and will print "Calculating 3 + 2..." and "5"
-//!     println!("{}", s, add_two_redis(3));
+//!     println!("{}", add_two_redis(3));
 //!     // Value will be cached from Redis, will only print "5"
-//!     println!("{}", s, add_two_redis(3));
+//!     println!("{}", add_two_redis(3));
 //! }
 //! ```
 //!
@@ -279,10 +280,8 @@ mod tests {
     extern crate num;
     use super::*;
     use std;
-    use std::error::Error;
     use self::num::{Num, NumCast};
-    use storage::redis::RedisStorage;
-    use storage::file::FileStorage;
+    use storage::{FileStorage, RedisStorage};
     use persistentcache_procmacro::persistent_cache;
 
     fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> T {
