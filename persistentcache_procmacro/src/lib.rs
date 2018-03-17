@@ -5,11 +5,13 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
-//! Proc macro to persistently cache functions.
+//! Procedural macro to persistently cache functions.
 //!
-//! TODO: Actual documentation
+//! See the documentation of
+//! [persistentcache](https://stefan-k.github.io/persistentcache-rs/persistentcache) for details.
 //!
-//! Many ideas are taken from [accel](https://github.com/termoshtt/accel/)
+//! I would not have managed to write this code without the ideas that I shamelessly stole from
+//! [accel](https://github.com/termoshtt/accel/).
 #![feature(proc_macro)]
 #![recursion_limit = "256"]
 
@@ -102,7 +104,6 @@ fn function_persistenticator(func: &Function) -> TokenStream {
             };
             let mut s = ::std::collections::hash_map::DefaultHasher::new();
 
-            // println!("{:?}", #attrs[0]);
 
             macro_rules! expand_inputs {
                 ($s:ident;) => {};
@@ -121,14 +122,13 @@ fn function_persistenticator(func: &Function) -> TokenStream {
             let result: Vec<u8> = S.lock().unwrap().get(&var_name).unwrap();
             match result.len() {
                 0 => {
-                    // println!("calling");
-                    // let res = (||{#block})();
+                    // Computing and storing the value
                     let res = #block;
                     S.lock().unwrap().set(&var_name, &pers_pc_bincode::serialize(&res).unwrap()).unwrap();
                     return res;
                 },
                 _ => {
-                    // println!("retrieving");
+                    // Fetching the value
                     return pers_pc_bincode::deserialize(&result).unwrap()
                 },
             };
