@@ -8,6 +8,58 @@ Storages either store on disk (`FileStorage`) or Redis (`RedisStorage`).
 
 The documentation can be found [here](https://stefan-k.github.io/persistentcache-rs/persistentcache)
 
+## Example
+
+```rust
+#![feature(proc_macro)]
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate persistentcache;
+extern crate persistentcache_procmacro;
+use persistentcache::*;
+use persistentcache::storage::{FileStorage, RedisStorage};
+use persistentcache_procmacro::persistent_cache;
+
+// Either store it in a `FileStorage`...
+#[persistent_cache]
+#[params(FileStorage, "test_dir")]
+fn add_two_file(a: u64) -> u64 {
+    println!("Calculating {} + 2...", a);
+    a + 2
+}
+
+// ... or in a `RedisStorage`
+#[persistent_cache]
+#[params(RedisStorage, "redis://127.0.0.1")]
+fn add_two_redis(a: u64) -> u64 {
+    println!("Calculating {} + 2...", a);
+    a + 2
+}
+
+fn main() {
+    // Function is called and will print "Calculating 2 + 2..." and "4"
+    println!("{}", add_two_file(2));
+    // Value will be cached from Redis, will only print "4"
+    println!("{}", add_two_file(2));
+    // Function is called and will print "Calculating 3 + 2..." and "5"
+    println!("{}", add_two_redis(3));
+    // Value will be cached from Redis, will only print "5"
+    println!("{}", add_two_redis(3));
+}
+```
+
+This will print:
+
+```text
+Calculating 2 + 2...
+4
+4
+Calculating 3 + 2...
+5
+5
+```
+
 ## History
 
 This crate is inspired by [owls-cache](https://github.com/havoc-io/owls-cache) and its primary goal is to teach myself Rust.
