@@ -25,3 +25,6 @@ lazy_static = "1.0.0"
 version = "0.12"
 features = ["full", "fold", "parsing", "printing", "extra-traits"]
 default-features = false
+
+[badges]
+travis-ci = { repository = "stefan-k/persistentcache-rs", branch = "master" }
