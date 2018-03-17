@@ -16,7 +16,6 @@
 #[macro_use]
 extern crate futures_await_quote as quote;
 extern crate futures_await_syn as syn;
-extern crate lazy_static;
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
@@ -94,7 +93,7 @@ fn function_persistenticator(func: &Function) -> TokenStream {
     let path: &str = attrs[1].trim_matches(quotes);
 
     let pers_func = quote!{
-        extern crate bincode;
+        extern crate bincode as pers_pc_bincode;
         use std::hash::{Hash, Hasher};
         #vis #fn_token #ident(#inputs) #output
         {
@@ -125,12 +124,12 @@ fn function_persistenticator(func: &Function) -> TokenStream {
                     // println!("calling");
                     // let res = (||{#block})();
                     let res = #block;
-                    S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
+                    S.lock().unwrap().set(&var_name, &pers_pc_bincode::serialize(&res).unwrap()).unwrap();
                     return res;
                 },
                 _ => {
                     // println!("retrieving");
-                    return bincode::deserialize(&result).unwrap()
+                    return pers_pc_bincode::deserialize(&result).unwrap()
                 },
             };
         }

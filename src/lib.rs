@@ -33,14 +33,16 @@
 //! ```text
 //! [dependencies]
 //! lazy_static = "*"
-//! bincode = "*"
 //! persistentcache = "*"
 //! persistentcache_procmacro = "*"  # Only needed for `#[peristent_cache]`
 //! ```
 //!
 //! # Caching a function with `#[persistent_cache]`
 //!
-//! todo
+//! The easiest way to cache all calls to a function is by preceding it with the
+//! `#[persistent_cache]` directive. This modifies the function such that values never computed
+//! before are computed and cached in a storage. Already computed values are fetched from said
+//! storage without computing.
 //!
 //! ## Example
 //!
@@ -50,7 +52,6 @@
 //! #[macro_use]
 //! extern crate persistentcache;
 //! extern crate persistent_procmacro;
-//! extern crate bincode;
 //! use persistentcache::*;
 //! use persistentcache::storage::{FileStorage, RedisStorage};
 //! use persistentcache_procmacro::persistent_cache;
@@ -111,7 +112,6 @@
 //! ```
 //! #[macro_use] extern crate lazy_static;
 //! #[macro_use] extern crate persistentcache;
-//! extern crate bincode;
 //! use persistentcache::*;
 //!
 //! // Either store it in a `FileStorage`...
@@ -166,7 +166,6 @@
 //!
 //! ```
 //! #![allow(redundant_closure_call)]
-//! extern crate bincode;
 //! #[macro_use]
 //! extern crate persistentcache;
 //! use persistentcache::*;
@@ -228,13 +227,9 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(redundant_closure_call))]
-// #![feature(trace_macros)]
-// #![feature(log_syntax)]
 #![allow(unused_imports)]
 #![warn(missing_docs)]
-// #![feature(custom_attribute)]
 #![feature(proc_macro)]
-extern crate bincode;
 #[macro_use]
 extern crate error_chain;
 extern crate fs2;
@@ -252,7 +247,6 @@ mod errors {
             Redis(::redis::RedisError);
             Regex(::regex::Error);
             IO(::std::io::Error);
-            Bincode(::bincode::Error);
         }
     }
 }

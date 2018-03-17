@@ -45,7 +45,9 @@ macro_rules! cache_func {
     };
     // internal
     ($f:ident($($x:ident),*), $b:block, $prefix:expr) => {
-        use bincode;
+        extern crate bincode as pers_f_bincode;
+        // use bincode as pers_f_bincode;
+        // use bincode;
         use ::std::hash::{Hash, Hasher};
 
         let mut s = ::std::collections::hash_map::DefaultHasher::new();
@@ -58,10 +60,10 @@ macro_rules! cache_func {
         match result.len() {
             0 => {
                 let res = {$b};
-                S.lock().unwrap().set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
+                S.lock().unwrap().set(&var_name, &pers_f_bincode::serialize(&res).unwrap()).unwrap();
                 return res;
             },
-            _ => return bincode::deserialize(&result).unwrap(),
+            _ => return pers_f_bincode::deserialize(&result).unwrap(),
         }
     }
 }
@@ -76,7 +78,7 @@ macro_rules! cache {
     // prefix provided
     ($storage:ident, $func:ident($($x:expr),*), $prefix:expr) => {
         (||{
-            use bincode;
+            extern crate bincode as pers_bincode;
             use ::std::hash::{Hash, Hasher};
 
             let mut s = ::std::collections::hash_map::DefaultHasher::new();
@@ -90,22 +92,22 @@ macro_rules! cache {
             match result.len() {
                 0 => {
                     res = $func($($x),*);
-                    $storage.set(&var_name, &bincode::serialize(&res).unwrap()).unwrap();
+                    $storage.set(&var_name, &pers_bincode::serialize(&res).unwrap()).unwrap();
                     res
                     // match $func($($x),*) {
                     //     Ok(res) => {
-                    //         $storage.set(&var_name, &bincode::serialize(&res)?)?;
+                    //         $storage.set(&var_name, &pers_bincode::serialize(&res)?)?;
                     //         Ok(res)
                     //     }
                     //     Err(e) => Err(e)
                     // }
                 },
-                // _ => match bincode::deserialize(&result) {
+                // _ => match pers_bincode::deserialize(&result) {
                 //     Ok(res) => res,
                 //     Err(e) => panic!(e.into()), // I have no idea what I am doing.
                 // }
                 _ => {
-                    res = bincode::deserialize(&result).unwrap();
+                    res = pers_bincode::deserialize(&result).unwrap();
                     res
                 } 
             }
