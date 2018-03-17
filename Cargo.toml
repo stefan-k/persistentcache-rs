@@ -11,6 +11,10 @@ readme = "README.md"
 keywords = ["persistent", "caching", "science", "HPC", "memoization"]
 categories = ["caching", "science"]
 license-file = "LICENSE-APACHE"
+exclude = [ 
+	".travis.yml",
+	"push_docs",
+]
 
 [dependencies]
 clippy = {version = "0.0.188", optional = true}
@@ -20,6 +24,7 @@ regex = "0.2.10"
 lazy_static = "1.0.0"
 fs2 = "0.4.3"
 error-chain = "0.11.0"
+# persistentcache_procmacro = "0.0.1"
 
 [dependencies.persistentcache_procmacro]
 path = "persistentcache_procmacro"
@@ -33,3 +38,6 @@ default = []
 
 [workspace]
 members = ["persistentcache_procmacro"]
+
+[badges]
+travis-ci = { repository = "stefan-k/persistentcache-rs", branch = "master" }
