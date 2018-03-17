@@ -7,16 +7,24 @@
 
 //! Macros for persistently caching function calls
 //!
-//! The values are cached either in files or on Redis. Two storages, `FileStorage` and `RedisStorage`
-//! are provided.
+//! The values are cached either in files or on Redis. Two storages, `FileStorage` and
+//! `RedisStorage` are provided.
 //! Caching is performed based on the function name and function parameters, meaning that for every
 //! combination of function and parameters, the returned value is stored in a storage. Subsequent
 //! calls of this function with the same parameters are not computed, but instead fetched from the
 //! storage. This can lead to an decrease in computing time in case the function call is
 //! computationally more expensive than fetching the value from the storage. The storages are
 //! persistent (stored on disk) and can be shared between different threads and processes.
-//! All Parameters to the function need to be Hashable. The return value needs to be serializeable
-//! by the crate `bincode`.
+//! All parameters of the function to be cached need to be Hashable. The return value needs to be
+//! serializeable by the crate `bincode`.
+//!
+//! There are two different ways of caching:
+//!
+//! 1) Caching individual function calls with the `cache!` macro. This way the function can still
+//!    be used without caching if necessary.
+//! 2) Caching every function call. For this, either the `cache_func!` macro or a procedural macro
+//!    can be used. The latter is achieved with the compiler directive `#[persistent_cache]` of the
+//!    subcrate `persistentcache_procmacro`.
 //!
 //! # Setup
 //!
@@ -27,13 +35,15 @@
 //! lazy_static = "*"
 //! bincode = "*"
 //! persistentcache = "*"
+//! persistentcache_procmacro = "*"  # Only needed for `#[peristent_cache]`
 //! ```
 //!
 //! # Caching function calls with `cache!`
 //!
 //! The macro `cache!` caches a function call. The advantage of this approach over the macro
-//! `cache_func` is that different storages can be used for different calls. Furthermore the
-//! function can still be called without caching if desired.
+//! `cache_func` and the procedual macro `#[peristent_cache]` is that different storages can be
+//! used for different calls. Furthermore the function can still be called without caching if
+//! desired.
 //! However, in case of recursive functions, this will most likely not work as expected because the
 //! recursive calls will not be cached.
 //! The macro expects the function to return a value of type `Result<T, Box<std::error::Error>>`.
@@ -43,7 +53,8 @@
 //! ```
 //! #![allow(redundant_closure_call)]
 //! extern crate bincode;
-//! #[macro_use] extern crate persistentcache;
+//! #[macro_use]
+//! extern crate persistentcache;
 //! use persistentcache::*;
 //!
 //! fn add_two(a: u64) -> Result<u64, Box<std::error::Error>> {
@@ -109,6 +120,62 @@
 //!     println!("Calculating {} + 2...", a);
 //!     a + 2
 //! });
+//!
+//! fn main() {
+//!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
+//!     println!("{}", s, add_two_file(2));
+//!     // Value will be cached from Redis, will only print "4"
+//!     println!("{}", s, add_two_file(2));
+//!     // Function is called and will print "Calculating 3 + 2..." and "5"
+//!     println!("{}", s, add_two_redis(3));
+//!     // Value will be cached from Redis, will only print "5"
+//!     println!("{}", s, add_two_redis(3));*/
+//! }
+//! ```
+//!
+//! This will print:
+//!
+//! ```text
+//! Calculating 2 + 2...
+//! 4
+//! 4
+//! Calculating 3 + 2...
+//! 5
+//! 5
+//! ```
+//!
+//! # Caching a function with `#[peristent_cache]`
+//!
+//! TODO
+//!
+//! ## Example
+//!
+//! ```
+//! #[macro_use]
+//! extern crate lazy_static;
+//! #[macro_use]
+//! extern crate persistentcache;
+//! extern crate persistent_procmacro;
+//! extern crate bincode;
+//! use persistentcache::*;
+//! use persistentcache::storage::{FileStorage, RedisStorage};
+//! use persistentcache_procmacro::persistent_cache;
+//!
+//! // Either store it in a `FileStorage`...
+//! #[persistent_cache]
+//! #[params(FileStorage, "test_dir")]
+//! fn add_two_file(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! }
+//!
+//! // ... or in a `RedisStorage`
+//! #[persistent_cache]
+//! #[params(RedisStorage, "redis://127.0.0.1")]
+//! fn add_two_redis(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! }
 //!
 //! fn main() {
 //!     /*// Function is called and will print "Calculating 2 + 2..." and "4"
@@ -274,6 +341,7 @@ mod tests {
         s.flush().unwrap();
 
         #[persistent_cache]
+        #[params(FileStorage, "file_test")]
         fn add_two(n: u64) -> u64 {
             n + 2
         }
@@ -289,6 +357,7 @@ mod tests {
         let mut counter: i64 = 0;
 
         #[persistent_cache]
+        #[params(FileStorage, "file_test")]
         fn test_func_proc(a: &Vec<i64>, counter: &mut i64) -> Vec<i64> {
             *counter += 1;
             vec![a[1], a[0]]
