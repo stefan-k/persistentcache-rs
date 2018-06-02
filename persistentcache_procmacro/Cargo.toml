@@ -1,6 +1,6 @@
 [package]
 name = "persistentcache_procmacro"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Procedural macro for persistently caching functions (dependency of persistentcache crate)"
