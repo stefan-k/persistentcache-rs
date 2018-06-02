@@ -1,6 +1,6 @@
 [package]
 name = "persistentcache"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Stefan Kroboth <stefan.kroboth@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Macros for persistently caching function calls using files or Redis"
@@ -24,11 +24,11 @@ regex = "0.2.10"
 lazy_static = "1.0.0"
 fs2 = "0.4.3"
 error-chain = "0.11.0"
-persistentcache_procmacro = "0.0.2"
+persistentcache_procmacro = "0.0.3"
 
 # [dependencies.persistentcache_procmacro]
 # path = "persistentcache_procmacro"
-# version = "0.0.2"
+# version = "0.0.3"
 
 [dev-dependencies]
 num = "0.1.42"

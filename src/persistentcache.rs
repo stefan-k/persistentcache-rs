@@ -6,9 +6,9 @@
 // copied, modified, or distributed except according to those terms.
 
 //! Implementation of the macros `cache!` and `cache_func!`.
-use PREFIX;
-use PersistentCache;
 use errors::*;
+use PersistentCache;
+use PREFIX;
 
 /// Cache an entire function.
 #[macro_export]
@@ -109,7 +109,7 @@ macro_rules! cache {
                 _ => {
                     res = pers_bincode::deserialize(&result).unwrap();
                     res
-                } 
+                }
             }
        })()
     }

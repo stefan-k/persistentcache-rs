@@ -7,8 +7,8 @@
 
 //! Macros for persistently caching function calls
 //!
-//! The values are cached either in files or on Redis. Two storages, `FileStorage` and
-//! `RedisStorage` are provided.
+//! The values are cached either in files or on Redis. Three storages, `FileStorage`,
+//! `FileMemoryStorage` and `RedisStorage` are provided.
 //! Caching is performed based on the function name and function parameters, meaning that for every
 //! combination of function and parameters, the returned value is stored in a storage. Subsequent
 //! calls of this function with the same parameters are not computed, but instead fetched from the
@@ -48,13 +48,14 @@
 //!
 //! ```
 //! #![feature(proc_macro)]
+//! #![feature(proc_macro_gen)]
 //! #[macro_use]
 //! extern crate lazy_static;
 //! #[macro_use]
 //! extern crate persistentcache;
 //! extern crate persistentcache_procmacro;
 //! use persistentcache::*;
-//! use persistentcache::storage::{FileStorage, RedisStorage};
+//! use persistentcache::storage::{FileStorage, FileMemoryStorage, RedisStorage};
 //! use persistentcache_procmacro::persistent_cache;
 //!
 //! // Either store it in a `FileStorage`...
@@ -65,10 +66,18 @@
 //!     a + 2
 //! }
 //!
-//! // ... or in a `RedisStorage`
+//! // ... or in a `RedisStorage` ...
 //! #[persistent_cache]
 //! #[params(RedisStorage, "redis://127.0.0.1")]
 //! fn add_two_redis(a: u64) -> u64 {
+//!     println!("Calculating {} + 2...", a);
+//!     a + 2
+//! }
+//!
+//! // ... or in a `FileMemoryStorage` ...
+//! #[persistent_cache]
+//! #[params(FileMemoryStorage, "test_dir_mem")]
+//! fn add_two_file_memory(a: u64) -> u64 {
 //!     println!("Calculating {} + 2...", a);
 //!     a + 2
 //! }
@@ -82,6 +91,10 @@
 //!     println!("{}", add_two_redis(3));
 //!     // Value will be cached from Redis, will only print "5"
 //!     println!("{}", add_two_redis(3));
+//!     // Function is called and will print "Calculating 4 + 2..." and "6"
+//!     println!("{}", add_two_file_memory(4));
+//!     // Value will be cached from Redis, will only print "6"
+//!     println!("{}", add_two_file_memory(4));
 //! }
 //! ```
 //!
@@ -177,7 +190,7 @@
 //! }
 //!
 //! fn main() {
-//!     let s = storage::redis::RedisStorage::new("redis://127.0.0.1").unwrap();
+//!     let mut s = storage::redis::RedisStorage::new("redis://127.0.0.1").unwrap();
 //!     // Function is called and will print "Calculating 2 + 2..." and "4"
 //!     println!("{}", cache!(s, add_two(2)));
 //!     // Value will be cached from Redis, will only print "4"
@@ -210,7 +223,7 @@
 //! The tests should be run in a single thread because the Storages are regularly flushed.
 //!
 //! ```bash
-//! cargo test --features clippy -- --test-threads=1
+//! cargo test -- --test-threads=1
 //! ```
 //!
 //! A Redis server needs to be running and listening at `127.0.0.1` for the tests to work.
@@ -227,12 +240,10 @@
 //! of it for the `persistentcache_procmacro` crate.
 //!
 #![recursion_limit = "1024"]
-#![cfg_attr(feature = "clippy", feature(plugin))]
-#![cfg_attr(feature = "clippy", plugin(clippy))]
-#![cfg_attr(feature = "clippy", allow(redundant_closure_call))]
 #![allow(unused_imports)]
 #![warn(missing_docs)]
 #![feature(proc_macro)]
+#![feature(proc_macro_gen)]
 #[macro_use]
 extern crate error_chain;
 extern crate fs2;
@@ -268,21 +279,21 @@ pub const PREFIX: &str = "pc";
 /// Traits which need to be implemented by any storage
 pub trait PersistentCache {
     /// Return serialized value of variable
-    fn get(&self, &str) -> Result<Vec<u8>>;
+    fn get(&mut self, &str) -> Result<Vec<u8>>;
     /// Set serialized value of variable
-    fn set(&self, &str, &[u8]) -> Result<()>;
+    fn set(&mut self, &str, &[u8]) -> Result<()>;
     /// Flush storage
-    fn flush(&self) -> Result<()>;
+    fn flush(&mut self) -> Result<()>;
 }
 
 #[cfg(test)]
 mod tests {
     extern crate num;
-    use super::*;
-    use std;
     use self::num::{Num, NumCast};
-    use storage::{FileStorage, RedisStorage};
+    use super::*;
     use persistentcache_procmacro::persistent_cache;
+    use std;
+    use storage::{FileMemoryStorage, FileStorage, RedisStorage};
 
     fn test_func_1<T: Num + NumCast>(a: T, counter: &mut i64) -> T {
         *counter += 1;
@@ -306,7 +317,7 @@ mod tests {
 
     #[test]
     fn test_fib() {
-        let s = RedisStorage::new("redis://127.0.0.1").unwrap();
+        let mut s = RedisStorage::new("redis://127.0.0.1").unwrap();
         s.flush().unwrap();
         cache_func!(
             Redis,
@@ -324,7 +335,7 @@ mod tests {
 
     #[test]
     fn test_func() {
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         cache_func!(
             File,
@@ -339,7 +350,7 @@ mod tests {
 
     #[test]
     fn test_func_procmacro() {
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
 
         #[persistent_cache]
@@ -354,7 +365,7 @@ mod tests {
 
     #[test]
     fn test_func_procmacro2() {
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         let mut counter: i64 = 0;
 
@@ -373,10 +384,30 @@ mod tests {
     }
 
     #[test]
+    fn test_func_procmacro3() {
+        let mut s = FileMemoryStorage::new("file_test").unwrap();
+        s.flush().unwrap();
+        let mut counter: i64 = 0;
+
+        #[persistent_cache]
+        #[params(FileMemoryStorage, "file_test")]
+        fn test_func_proc(a: &Vec<i64>, counter: &mut i64) -> Vec<i64> {
+            *counter += 1;
+            vec![a[1], a[0]]
+        }
+
+        assert_eq!(vec![1, 2], test_func_proc(&vec![2, 1], &mut counter));
+        assert_eq!(counter, 1);
+        assert_eq!(vec![1, 2], test_func_proc(&vec![2, 1], &mut counter));
+        assert_eq!(counter, 2);
+        s.flush().unwrap();
+    }
+
+    #[test]
     fn test_redis_storage() {
         let a: i64 = 6;
         let mut counter: i64 = 0;
-        let s = RedisStorage::new("redis://127.0.0.1").unwrap();
+        let mut s = RedisStorage::new("redis://127.0.0.1").unwrap();
         s.flush().unwrap();
         assert_eq!(a * 10, test_func_1(a, &mut counter));
         assert_eq!(counter, 1);
@@ -392,7 +423,7 @@ mod tests {
     fn test_file_storage() {
         let a: i64 = 6;
         let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         assert_eq!(a * 10, test_func_1(a, &mut counter));
         assert_eq!(counter, 1);
@@ -410,7 +441,7 @@ mod tests {
         let a: i64 = 6;
         let b: i64 = 2;
         let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         assert_eq!(a * b, cache!(s, test_func_2(a, b, &mut counter)));
         assert_eq!(counter, 1);
@@ -423,7 +454,7 @@ mod tests {
     fn test_vectors() {
         let a: Vec<i64> = vec![1, 2, 3];
         let mut counter: i64 = 0;
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         assert_eq!(vec![2, 1], test_func_3(&a, &mut counter));
         assert_eq!(counter, 1);
@@ -438,7 +469,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn failing_function() {
-        let s = FileStorage::new("file_test").unwrap();
+        let mut s = FileStorage::new("file_test").unwrap();
         s.flush().unwrap();
         cache!(s, panic());
     }

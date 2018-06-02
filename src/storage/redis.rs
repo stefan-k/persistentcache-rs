@@ -5,14 +5,16 @@
 // http://opensource.org/licenses/MIT>, at your option. This file may not be
 // copied, modified, or distributed except according to those terms.
 
+//! # RedisStorage
+//!
 //! Storage for persistently saving return values of functions in Redis.
-use std::error::Error;
-use redis::{self, Commands};
 use errors::*;
+use redis::{self, Commands};
+use std::error::Error;
 
+use PersistentCache;
 #[allow(unused_imports)]
 use PREFIX;
-use PersistentCache;
 
 /// `RedisStorage` struct holds a `redis::Connection` variable.
 pub struct RedisStorage {
@@ -25,7 +27,7 @@ impl RedisStorage {
     ///
     /// This will fail in case there is no redis server running.
     ///
-    /// # Examples
+    /// # Example
     ///
     /// ```
     /// use persistentcache::storage::redis::RedisStorage;
@@ -41,7 +43,7 @@ impl RedisStorage {
 
 impl PersistentCache for RedisStorage {
     /// Returns the value within the Redis variable `name`.
-    fn get(&self, name: &str) -> Result<Vec<u8>> {
+    fn get(&mut self, name: &str) -> Result<Vec<u8>> {
         match self.con.get(name) {
             Ok(res) => Ok(res),
             Err(e) => Err(e.into()),
@@ -49,7 +51,7 @@ impl PersistentCache for RedisStorage {
     }
 
     /// Sets the Redis variable `name` to the array `val` of type `&[u8]`.
-    fn set(&self, name: &str, val: &[u8]) -> Result<()> {
+    fn set(&mut self, name: &str, val: &[u8]) -> Result<()> {
         // Yes, this is weird.
         let r: Result<()> = self.con.set(name, val).map_err(|e| e.into());
         r?;
@@ -57,7 +59,7 @@ impl PersistentCache for RedisStorage {
     }
 
     /// Delete all variables stored in the Redis database which start with `PREFIX_`.
-    fn flush(&self) -> Result<()> {
+    fn flush(&mut self) -> Result<()> {
         let iter: redis::Iter<String> = redis::cmd("KEYS")
             .arg(format!("{}_*", PREFIX))
             .iter(&self.con)?;
