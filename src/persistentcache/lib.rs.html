@@ -1,61 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `src/lib.rs`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang">
-
-    <title>lib.rs.html -- source</title>
-
-    <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
-          id="mainThemeStyle">
-    
-    <link rel="stylesheet" type="text/css" href="../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
-    <script src="../../storage.js"></script>
-    
-
-    
-    
-</head>
-<body class="rustdoc source">
-    <!--[if lte IE 8]>
-    <div class="warning">
-        This old browser is unsupported and will most likely display funky
-        things.
-    </div>
-    <![endif]-->
-
-    
-
-    <nav class="sidebar">
-        <div class="sidebar-menu">&#9776;</div>
-        
-        
-    </nav>
-
-    <div class="theme-picker">
-        <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../brush.svg" width="18" alt="Pick another theme!">
-        </button>
-        <div id="theme-choices"></div>
-    </div>
-    <script src="../../theme.js"></script>
-    <nav class="sub">
-        <form class="search-form js-only">
-            <div class="search-container">
-                <input class="search-input" name="search"
-                       autocomplete="off"
-                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
-                       type="search">
-            </div>
-        </form>
-    </nav>
-
-    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -500,6 +443,37 @@
 <span id="443">443</span>
 <span id="444">444</span>
 <span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Stefan Kroboth</span>
 <span class="comment">//</span>
@@ -510,8 +484,8 @@
 
 <span class="doccomment">//! Macros for persistently caching function calls</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! The values are cached either in files or on Redis. Two storages, `FileStorage` and</span>
-<span class="doccomment">//! `RedisStorage` are provided.</span>
+<span class="doccomment">//! The values are cached either in files or on Redis. Three storages, `FileStorage`,</span>
+<span class="doccomment">//! `FileMemoryStorage` and `RedisStorage` are provided.</span>
 <span class="doccomment">//! Caching is performed based on the function name and function parameters, meaning that for every</span>
 <span class="doccomment">//! combination of function and parameters, the returned value is stored in a storage. Subsequent</span>
 <span class="doccomment">//! calls of this function with the same parameters are not computed, but instead fetched from the</span>
@@ -551,13 +525,14 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//! #![feature(proc_macro)]</span>
+<span class="doccomment">//! #![feature(proc_macro_gen)]</span>
 <span class="doccomment">//! #[macro_use]</span>
 <span class="doccomment">//! extern crate lazy_static;</span>
 <span class="doccomment">//! #[macro_use]</span>
 <span class="doccomment">//! extern crate persistentcache;</span>
 <span class="doccomment">//! extern crate persistentcache_procmacro;</span>
 <span class="doccomment">//! use persistentcache::*;</span>
-<span class="doccomment">//! use persistentcache::storage::{FileStorage, RedisStorage};</span>
+<span class="doccomment">//! use persistentcache::storage::{FileStorage, FileMemoryStorage, RedisStorage};</span>
 <span class="doccomment">//! use persistentcache_procmacro::persistent_cache;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! // Either store it in a `FileStorage`...</span>
@@ -568,10 +543,18 @@
 <span class="doccomment">//!     a + 2</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! // ... or in a `RedisStorage`</span>
+<span class="doccomment">//! // ... or in a `RedisStorage` ...</span>
 <span class="doccomment">//! #[persistent_cache]</span>
 <span class="doccomment">//! #[params(RedisStorage, &quot;redis://127.0.0.1&quot;)]</span>
 <span class="doccomment">//! fn add_two_redis(a: u64) -&gt; u64 {</span>
+<span class="doccomment">//!     println!(&quot;Calculating {} + 2...&quot;, a);</span>
+<span class="doccomment">//!     a + 2</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! // ... or in a `FileMemoryStorage` ...</span>
+<span class="doccomment">//! #[persistent_cache]</span>
+<span class="doccomment">//! #[params(FileMemoryStorage, &quot;test_dir_mem&quot;)]</span>
+<span class="doccomment">//! fn add_two_file_memory(a: u64) -&gt; u64 {</span>
 <span class="doccomment">//!     println!(&quot;Calculating {} + 2...&quot;, a);</span>
 <span class="doccomment">//!     a + 2</span>
 <span class="doccomment">//! }</span>
@@ -585,6 +568,10 @@
 <span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;5&quot;</span>
 <span class="doccomment">//!     println!(&quot;{}&quot;, add_two_redis(3));</span>
+<span class="doccomment">//!     // Function is called and will print &quot;Calculating 4 + 2...&quot; and &quot;6&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file_memory(4));</span>
+<span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;6&quot;</span>
+<span class="doccomment">//!     println!(&quot;{}&quot;, add_two_file_memory(4));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -680,7 +667,7 @@
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     let s = storage::redis::RedisStorage::new(&quot;redis://127.0.0.1&quot;).unwrap();</span>
+<span class="doccomment">//!     let mut s = storage::redis::RedisStorage::new(&quot;redis://127.0.0.1&quot;).unwrap();</span>
 <span class="doccomment">//!     // Function is called and will print &quot;Calculating 2 + 2...&quot; and &quot;4&quot;</span>
 <span class="doccomment">//!     println!(&quot;{}&quot;, cache!(s, add_two(2)));</span>
 <span class="doccomment">//!     // Value will be cached from Redis, will only print &quot;4&quot;</span>
@@ -713,7 +700,7 @@
 <span class="doccomment">//! The tests should be run in a single thread because the Storages are regularly flushed.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```bash</span>
-<span class="doccomment">//! cargo test --features clippy -- --test-threads=1</span>
+<span class="doccomment">//! cargo test -- --test-threads=1</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! A Redis server needs to be running and listening at `127.0.0.1` for the tests to work.</span>
@@ -730,12 +717,10 @@
 <span class="doccomment">//! of it for the `persistentcache_procmacro` crate.</span>
 <span class="doccomment">//!</span>
 <span class="attribute">#![<span class="ident">recursion_limit</span> <span class="op">=</span> <span class="string">&quot;1024&quot;</span>]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">feature</span>(<span class="ident">plugin</span>))]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">plugin</span>(<span class="ident">clippy</span>))]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clippy&quot;</span>, <span class="ident">allow</span>(<span class="ident">redundant_closure_call</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">feature</span>(<span class="ident">proc_macro</span>)]</span>
+<span class="attribute">#![<span class="ident">feature</span>(<span class="ident">proc_macro_gen</span>)]</span>
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">error_chain</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">fs2</span>;
@@ -771,21 +756,21 @@
 <span class="doccomment">/// Traits which need to be implemented by any storage</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PersistentCache</span> {
     <span class="doccomment">/// Return serialized value of variable</span>
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>;
     <span class="doccomment">/// Set serialized value of variable</span>
-    <span class="kw">fn</span> <span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
     <span class="doccomment">/// Flush storage</span>
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">num</span>;
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">std</span>;
     <span class="kw">use</span> <span class="self">self</span>::<span class="ident">num</span>::{<span class="ident">Num</span>, <span class="ident">NumCast</span>};
-    <span class="kw">use</span> <span class="ident">storage</span>::{<span class="ident">FileStorage</span>, <span class="ident">RedisStorage</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">persistentcache_procmacro</span>::<span class="ident">persistent_cache</span>;
+    <span class="kw">use</span> <span class="ident">std</span>;
+    <span class="kw">use</span> <span class="ident">storage</span>::{<span class="ident">FileMemoryStorage</span>, <span class="ident">FileStorage</span>, <span class="ident">RedisStorage</span>};
 
     <span class="kw">fn</span> <span class="ident">test_func_1</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Num</span> <span class="op">+</span> <span class="ident">NumCast</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">T</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
         <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
@@ -809,7 +794,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_fib</span>() {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">cache_func</span><span class="macro">!</span>(
             <span class="ident">Redis</span>,
@@ -827,7 +812,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_func</span>() {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">cache_func</span><span class="macro">!</span>(
             <span class="ident">File</span>,
@@ -842,7 +827,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_func_procmacro</span>() {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
 
         <span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
@@ -857,7 +842,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_func_procmacro2</span>() {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
 
@@ -876,10 +861,30 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_func_procmacro3</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileMemoryStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
+
+        <span class="attribute">#[<span class="ident">persistent_cache</span>]</span>
+        <span class="attribute">#[<span class="ident">params</span>(<span class="ident">FileMemoryStorage</span>, <span class="string">&quot;file_test&quot;</span>)]</span>
+        <span class="kw">fn</span> <span class="ident">test_func_proc</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>, <span class="ident">counter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+            <span class="kw-2">*</span><span class="ident">counter</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">a</span>[<span class="number">1</span>], <span class="ident">a</span>[<span class="number">0</span>]]
+        }
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>], <span class="ident">test_func_proc</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>], <span class="ident">test_func_proc</span>(<span class="kw-2">&amp;</span><span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">2</span>);
+        <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_redis_storage</span>() {
         <span class="kw">let</span> <span class="ident">a</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">6</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">RedisStorage</span>::<span class="ident">new</span>(<span class="string">&quot;redis://127.0.0.1&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
@@ -895,7 +900,7 @@
     <span class="kw">fn</span> <span class="ident">test_file_storage</span>() {
         <span class="kw">let</span> <span class="ident">a</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">6</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="number">10</span>, <span class="ident">test_func_1</span>(<span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
@@ -913,7 +918,7 @@
         <span class="kw">let</span> <span class="ident">a</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">6</span>;
         <span class="kw">let</span> <span class="ident">b</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">2</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>, <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">test_func_2</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>)));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
@@ -926,7 +931,7 @@
     <span class="kw">fn</span> <span class="ident">test_vectors</span>() {
         <span class="kw">let</span> <span class="ident">a</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">1</span>], <span class="ident">test_func_3</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">counter</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">counter</span>, <span class="number">1</span>);
@@ -941,74 +946,10 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">should_panic</span>]</span>
     <span class="kw">fn</span> <span class="ident">failing_function</span>() {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">FileStorage</span>::<span class="ident">new</span>(<span class="string">&quot;file_test&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">s</span>.<span class="ident">flush</span>().<span class="ident">unwrap</span>();
         <span class="macro">cache</span><span class="macro">!</span>(<span class="ident">s</span>, <span class="ident">panic</span>());
     }
 }
 </pre>
-</section>
-    <section id='search' class="content hidden"></section>
-
-    <section class="footer"></section>
-
-    <aside id="help" class="hidden">
-        <div>
-            <h1 class="hidden">Help</h1>
-
-            <div class="shortcuts">
-                <h2>Keyboard Shortcuts</h2>
-
-                <dl>
-                    <dt><kbd>?</kbd></dt>
-                    <dd>Show this help dialog</dd>
-                    <dt><kbd>S</kbd></dt>
-                    <dd>Focus the search field</dd>
-                    <dt><kbd>↑</kbd></dt>
-                    <dd>Move up in search results</dd>
-                    <dt><kbd>↓</kbd></dt>
-                    <dd>Move down in search results</dd>
-                    <dt><kbd>↹</kbd></dt>
-                    <dd>Switch tab</dd>
-                    <dt><kbd>&#9166;</kbd></dt>
-                    <dd>Go to active search result</dd>
-                    <dt><kbd>+</kbd></dt>
-                    <dd>Expand all sections</dd>
-                    <dt><kbd>-</kbd></dt>
-                    <dd>Collapse all sections</dd>
-                </dl>
-            </div>
-
-            <div class="infos">
-                <h2>Search Tricks</h2>
-
-                <p>
-                    Prefix searches with a type followed by a colon (e.g.
-                    <code>fn:</code>) to restrict the search to a given type.
-                </p>
-
-                <p>
-                    Accepted types are: <code>fn</code>, <code>mod</code>,
-                    <code>struct</code>, <code>enum</code>,
-                    <code>trait</code>, <code>type</code>, <code>macro</code>,
-                    and <code>const</code>.
-                </p>
-
-                <p>
-                    Search functions by type signature (e.g.
-                    <code>vec -> usize</code> or <code>* -> vec</code>)
-                </p>
-            </div>
-        </div>
-    </aside>
-
-    
-
-    <script>
-        window.rootPath = "../../";
-        window.currentCrate = "persistentcache";
-    </script>
-    <script src="../../main.js"></script>
-    <script defer src="../../search-index.js"></script>
-</body>
-</html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "persistentcache";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

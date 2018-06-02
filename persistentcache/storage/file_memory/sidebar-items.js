@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FileMemoryStorage","`FileMemoryStorage` struct"]]});
