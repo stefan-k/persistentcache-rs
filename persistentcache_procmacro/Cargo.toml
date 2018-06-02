@@ -18,7 +18,7 @@ proc-macro = true
 [dependencies]
 synom = "0.11.3"
 futures-await-quote = "0.4"
-proc-macro2 = { version = "0.1", features = ["unstable"] }
+proc-macro2 = { version = "0.4.4" }
 lazy_static = "1.0.0"
 bincode = "1.0.0"
 
