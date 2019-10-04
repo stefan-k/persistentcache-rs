@@ -243,7 +243,7 @@
 #![allow(unused_imports)]
 #![warn(missing_docs)]
 #![feature(proc_macro)]
-#![feature(proc_macro_gen)]
+#![feature(proc_macro_hygiene)]
 #[macro_use]
 extern crate error_chain;
 extern crate fs2;
@@ -256,7 +256,7 @@ extern crate regex;
 use persistentcache_procmacro::persistent_cache;
 
 mod errors {
-    error_chain!{
+    error_chain! {
         foreign_links {
             Redis(::redis::RedisError);
             Regex(::regex::Error);
