@@ -10,7 +10,7 @@ repository = "https://github.com/stefan-k/persistentcache-rs"
 readme = "README.md"
 keywords = ["persistent", "caching", "science", "HPC", "memoization"]
 categories = ["caching", "science"]
-license-file = "LICENSE-APACHE"
+# license-file = "LICENSE-APACHE"
 
 [lib]
 proc-macro = true
