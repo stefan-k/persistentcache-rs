@@ -242,7 +242,6 @@
 #![recursion_limit = "1024"]
 #![allow(unused_imports)]
 #![warn(missing_docs)]
-#![feature(proc_macro)]
 #![feature(proc_macro_hygiene)]
 #[macro_use]
 extern crate error_chain;
