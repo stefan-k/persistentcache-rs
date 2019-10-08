@@ -62,7 +62,8 @@ impl PersistentCache for RedisStorage {
     fn flush(&mut self) -> Result<()> {
         let iter: redis::Iter<String> = redis::cmd("KEYS")
             .arg(format!("{}_*", PREFIX))
-            .iter(&self.con)?;
+            .clone()
+            .iter(&mut self.con)?;
         let cmd: &mut redis::Cmd = &mut redis::cmd("DEL");
         // Not a very good looking hack, but I dont know how to figure out whether the iterator is
         // empty or not...
@@ -72,7 +73,7 @@ impl PersistentCache for RedisStorage {
             cmd.arg(bla);
         }
         if flushed_vars > 0 {
-            let r: Result<()> = cmd.query(&self.con).map_err(|e| e.into());
+            let r: Result<()> = cmd.query(&mut self.con).map_err(|e| e.into());
             // This is weird.
             r?;
         }
